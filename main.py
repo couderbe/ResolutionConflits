@@ -4,7 +4,7 @@ from PyQt5.QtCore import QPoint
 import radarview
 import math
 
-T = 150
+T = 200
 
 class Flight():
     def __init__(self,speed,trajectory):
