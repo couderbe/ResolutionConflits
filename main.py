@@ -11,8 +11,8 @@ if __name__ == "__main__":
     man = pb.Manoeuvre(10,50,math.pi / 7)
     trajectoire = pb.Trajectory(QPoint(0,0),math.pi/4,man)
     vol1 = pb.Flight(100,trajectoire)
-    trajectories = [vol1.pointTrajectory()]
-    #trajectories = [vol.pointTrajectory() for vol in pb.init()[0]]
+    #trajectories = [vol1.pointTrajectory()]
+    trajectories = [vol.pointTrajectory() for vol in pb.init()[0]]
     # Initialize Qt
     app = QtWidgets.QApplication([])
 
