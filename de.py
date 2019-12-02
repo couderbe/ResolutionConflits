@@ -1,14 +1,13 @@
 import random
 import pb
 
-N = 20 #nombre d'avion attention Benoit l'a
 F = 1.5 # à voir
 CR = 0.8 # à voir
 def genX (X) :
     genereX = []
     for i,x in enumerate (X):
-        R = random.randint(0,N-1)
-        l = [k for k in range(N) if k != i]
+        R = random.randint(0,pb.N_avion-1)
+        l = [k for k in range(pb.N_avion) if k != i]
         a,b,c = random.sample(l,3) # les indices différents entre eux et de i
         genere_x = []
         for k,maneuver in enumerate (x):
