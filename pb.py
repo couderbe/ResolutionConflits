@@ -115,17 +115,16 @@ def conflit2a2(f1,f2):
     c=(ptdep1.x-ptdep2.x)**2 + (ptdep1.y-ptdep2.y)**2 - d**2
     coeff=[a,b,c]
     racines=np.roots(coeff)
-    tdeb=racines[0]
-    tfin=racines[1]
-    if tdeb<0 or tdeb>T:
-        if tfin<0 or tfin>T:
-            return (0,0)
-        else:
-            return (0,tfin)
-    elif tfin<0 or tfin>T:
-        return (tdeb,0)
-    else:
-        return (tdeb, tfin)
+    tdeb=min(racines[0],racines[1])
+    tfin=max(racines[0],racines[1])
+    if tdeb<0:
+        if tfin>0:
+            f1.dConflits[f2]: (0, min(tfin, T))
+            f2.dConflits[f1]: (0, min(tfin, T))
+    elif tdeb<T:
+        f1.dConflits[f2]: (tdeb, min(tfin,T))
+        f2.dConflits[f1]: (tdeb, min(tfin,T))
+
 
 
 
@@ -133,7 +132,6 @@ def conflit2a2(f1,f2):
 
 def dureeConflit(f):
     N=len(f)
-    dicoConflits={}
     duree=0
     for i in range(0,N):
         for j in range(0, N):
