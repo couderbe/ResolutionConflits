@@ -83,7 +83,7 @@ def init():
         for l in range(N_avion):
             angle = random.uniform(-math.pi/6,math.pi/6)
             t0 = random.randint(0,T) # Les temps sont entier à voir
-            t1 = random.randint(t0,T)
+            t1 = random.randint(0,T)
             x.append(Manoeuvre(t0,t1,angle))
         X.append(x)
     return F,X
