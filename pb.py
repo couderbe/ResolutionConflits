@@ -1,11 +1,10 @@
 from PyQt5.QtCore import QPoint
-import math
 import random
 import numpy as np
 
 T = 200 # Temps total
 N_avion = 20 # Nombre d'avion
-alphaMax=math.pi/6
+alphaMax=np.pi/6
 d=5
 
 alMc=alphaMax**2
@@ -16,19 +15,20 @@ class Flight():
     def __init__(self,speed,trajectory):
         self.speed = speed
         self.trajectory = trajectory
+        self.dConflits = {}
 
     # return 5 QPoints qui sont debut,fin et cassures de la trajectoire
     # angles en radians
     def pointTrajectory(self):
         p0 = self.trajectory.pointDepart
-        p1 = p0 + QPoint(self.speed*self.trajectory.manoeuvre.t0*math.cos(self.trajectory.angle0),
-                         self.speed*self.trajectory.manoeuvre.t0*math.sin(self.trajectory.angle0))
-        p2 = p1 + QPoint(self.speed*self.trajectory.manoeuvre.t1*math.cos(self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed*self.trajectory.manoeuvre.t1*math.sin(self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p3 = p2 + QPoint(self.speed*self.trajectory.manoeuvre.t1*math.cos(-self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed*self.trajectory.manoeuvre.t1*math.sin(-self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p4 = p3 + QPoint(self.speed*(T - self.trajectory.manoeuvre.t0 - 2*self.trajectory.manoeuvre.t1)*math.cos(self.trajectory.angle0),
-                         self.speed*(T - self.trajectory.manoeuvre.t0 - 2*self.trajectory.manoeuvre.t1)*math.sin(self.trajectory.angle0))
+        p1 = p0 + QPoint(self.speed*self.trajectory.manoeuvre.t0*np.cos(self.trajectory.angle0),
+                         self.speed*self.trajectory.manoeuvre.t0*np.sin(self.trajectory.angle0))
+        p2 = p1 + QPoint(self.speed*self.trajectory.manoeuvre.t1*np.cos(self.trajectory.manoeuvre.angle + self.trajectory.angle0),
+                         self.speed*self.trajectory.manoeuvre.t1*np.sin(self.trajectory.manoeuvre.angle + self.trajectory.angle0))
+        p3 = p2 + QPoint(self.speed*self.trajectory.manoeuvre.t1*np.cos(-self.trajectory.manoeuvre.angle + self.trajectory.angle0),
+                         self.speed*self.trajectory.manoeuvre.t1*np.sin(-self.trajectory.manoeuvre.angle + self.trajectory.angle0))
+        p4 = p3 + QPoint(self.speed*(T - self.trajectory.manoeuvre.t0 - 2*self.trajectory.manoeuvre.t1)*np.cos(self.trajectory.angle0),
+                         self.speed*(T - self.trajectory.manoeuvre.t0 - 2*self.trajectory.manoeuvre.t1)*np.sin(self.trajectory.angle0))
         return [p0,p1,p2,p3,p4]
 
     def __repr__(self):
@@ -81,7 +81,7 @@ def init():
     for k in range(1,N_avion):
         x = []
         for l in range(N_avion):
-            angle = random.uniform(-math.pi/6,math.pi/6)
+            angle = random.uniform(-np.pi/6,np.pi/6)
             t0 = random.randint(0,T) # Les temps sont entier à voir
             t1 = random.randint(t0,T)
             x.append(Manoeuvre(t0,t1,angle))
