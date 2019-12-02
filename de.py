@@ -1,5 +1,5 @@
 import random
-
+import pb
 
 N = 20 #nombre d'avion attention Benoit l'a
 F = 1.5 # à voir
@@ -19,7 +19,7 @@ def genX (X) :
                 genere_x.append(maneuver)
         genereX.append(genere_x)
     for i, x in enumerate(X):
-        if de.fitness (genereX[i]) < de.fitness(x):
+        if pb.fitness (genereX[i]) < pb.fitness(x):
             genereX[i] = x
     return genereX
 # on genere le X à la génération N+1 et on vérifie s'il est valable avec la fonction fitness
