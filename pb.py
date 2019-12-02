@@ -31,6 +31,9 @@ class Flight():
                          self.speed*(T - self.trajectory.manoeuvre.t0 - 2*self.trajectory.manoeuvre.t1)*np.sin(self.trajectory.angle0))
         return [p0,p1,p2,p3,p4]
 
+    def listeConflits(self):
+        return self.dConflits.values()
+
     def __repr__(self):
         return str(self.speed) + " " +self.trajectory
 
