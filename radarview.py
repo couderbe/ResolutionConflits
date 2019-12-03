@@ -6,7 +6,7 @@ from PyQt5.QtGui import QPen
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
 TRAJECTORY_COLOR = "grey"
-TRAJECTORY_WIDTH = 15
+TRAJECTORY_WIDTH = 25
 
 
 class PanZoomView(QtWidgets.QGraphicsView):
@@ -43,6 +43,7 @@ class RadarView(QtWidgets.QWidget):
         # create components
         root_layout = QtWidgets.QVBoxLayout(self)
         self.scene = QtWidgets.QGraphicsScene()
+        self.scene.addRect(0,0,10,10)
         self.view = PanZoomView(self.scene)
         self.time_entry = QtWidgets.QLineEdit()
 

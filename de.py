@@ -103,7 +103,7 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
 
             #gen_avg = sum(gen_scores) / N_avion  # fitness moyen de la génération actuelle
             #gen_best = min(gen_scores)  # fitness du meilleur individu
-            gen_sol = population[gen_scores.index(min(gen_scores))]  # solution du meilleur individu
+            gen_sol = population[gen_scores.index(max(gen_scores))]  # solution du meilleur individu
 
     return gen_sol
 

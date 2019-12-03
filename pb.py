@@ -4,9 +4,9 @@ from PyQt5.QtCore import QPoint
 import random
 import numpy as np
 
-T = 400  # Temps total
+T = 10  # Temps total
 N_avion = 20  # Nombre d'avions
-N_pop = 5
+N_pop = 10
 alphaMax = np.pi / 6
 d = 5
 alMc = alphaMax ** 2
@@ -42,7 +42,7 @@ class Flight():
             self.trajectory.angle0),
                          self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.sin(
                              self.trajectory.angle0))
-        return [p0, p1, p2, p3, p4]
+        return [p0,p1,p2,p3,p4]
 
     def listeConflits(self):
         return self.dConflits.values()
