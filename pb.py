@@ -96,7 +96,6 @@ def init():
 # Prend en parametre f une liste d'avions = trajectoire + vitesse
 
 def cout(f):
-    N=len(f)
     C=0
     for fi in f:
         manoeuvre=(fi.trajectory).manoeuvre
@@ -126,24 +125,18 @@ def conflit2a2(f1,f2):
         f2.dConflits[f1]: (tdeb, min(tfin,T))
 
 
-
-
 #Fonction de duree de conflit: prend en parametre f une liste d'avions
 
 def dureeConflit(f):
-    N=len(f)
     duree=0
-    for i in range(0,N):
-        for j in range(0, N):
-            if j!=i:
-                if conflit2a2(f[i], f[j])!= (0,0):
-                    dicoConflits[f[i]]=(f[j], conflit2a2(f[i], f[j]))
-                    duree+=(conflit2a2(f[i], f[j])[1]- conflit2a2(f[i], f[j])[0])
-                    break # car on s'arrête pour le moment au premier conflit
+    for fi in f:
+        if fi.dConflits!={}:
+            key_mini=min(fi.dConflits.keys(),key=( lambda k: fi.dConflits[k][0]))
+            duree+=fi.dConflits[key_mini][1]-fi.dConflits[key_mini][0]
     return duree/T
 
 
-#fonciton fitness:
+#fonction fitness:
 def fitness(f):
     if dureeConflit(f)>0:
         return 1/(2+dureeConflit(f))
