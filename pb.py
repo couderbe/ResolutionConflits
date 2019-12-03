@@ -7,7 +7,8 @@ N_avion = 20  # Nombre d'avions
 N_pop = 100
 alphaMax = np.pi / 6
 d = 5
-
+#Peut-être à modifier pour pas avoir en variable globale
+Flights = []
 alMc = alphaMax ** 2
 Tc = T ** 2
 
@@ -110,7 +111,7 @@ def init():
 # Fonction de calcul du cout
 # Prend en parametre f une liste d'avions = trajectoire + vitesse
 
-def cout(f):
+def cout(f=Flights):
     C_ang= 0
     C_time= 0
     for fi in f:

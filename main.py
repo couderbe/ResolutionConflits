@@ -4,6 +4,7 @@ from PyQt5.QtCore import QPoint
 import radarview
 import math
 import pb
+import de
 
 
 if __name__ == "__main__":
@@ -12,7 +13,7 @@ if __name__ == "__main__":
     trajectoire = pb.Trajectory(QPoint(0,0),math.pi/4,man)
     vol1 = pb.Flight(100,trajectoire)
     #trajectories = [vol1.pointTrajectory()]
-    trajectories = [vol.pointTrajectory() for vol in pb.init()[0]]
+    trajectories = [vol.pointTrajectory() for vol in de.differential_evolution(pb.cout,pb.N_avion, de.F, de.CR, de.maxiter)]
     # Initialize Qt
     app = QtWidgets.QApplication([])
 
