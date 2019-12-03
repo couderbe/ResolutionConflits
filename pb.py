@@ -116,13 +116,21 @@ def conflit2a2(f1,f2):
     racines=np.roots(coeff)
     tdeb=min(racines[0],racines[1])
     tfin=max(racines[0],racines[1])
-    if tdeb<0:
-        if tfin>0:
-            f1.dConflits[f2]: (0, min(tfin, T))
-            f2.dConflits[f1]: (0, min(tfin, T))
-    elif tdeb<T:
-        f1.dConflits[f2]: (tdeb, min(tfin,T))
-        f2.dConflits[f1]: (tdeb, min(tfin,T))
+    if tdeb.imag==0:
+        if tdeb<0:
+            if tfin>0:
+                f1.dConflits[f2]: (0, min(tfin, T))
+                f2.dConflits[f1]: (0, min(tfin, T))
+        elif tdeb<T:
+            f1.dConflits[f2]: (tdeb, min(tfin,T))
+            f2.dConflits[f1]: (tdeb, min(tfin,T))
+
+def updateConflits(f):
+    N=len(f)
+    for i in range(0,N):
+        for j in range(i+1,N):
+            conflit2a2(f[i],f[j])
+
 
 
 #Fonction de duree de conflit: prend en parametre f une liste d'avions
