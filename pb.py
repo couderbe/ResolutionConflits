@@ -7,16 +7,15 @@ N_avion = 20  # Nombre d'avions
 N_pop = 100
 alphaMax = np.pi / 6
 d = 5
-#Peut-être à modifier pour pas avoir en variable globale
-Flights = []
 alMc = alphaMax ** 2
 Tc = T ** 2
 
 
 class Flight():
     def __init__(self, speed, trajectory):
-        self.speed = speed
         self.trajectory = trajectory
+        self.speed = np.dot(np.array([speed,0]),rotMatrix(self.trajectory.angle0)) #Un array numpy
+        print(self.speed)
         self.dConflits = {}#dictionnaire des conflits, clés: les avions et valeurs: listes des temps de début et fin de conflits pour tous les moments où les avions sont en conflit
         self.etat = 0
 
@@ -46,8 +45,11 @@ class Flight():
     def listeConflits(self):
         return self.dConflits.values()
 
+    def premierConflit(self):
+        return min(self.listeConflits(), key=lambda x: min([y[0] for y in x]))
+
     def __repr__(self):
-        return str(self.speed) + " " + self.trajectory
+        return str(self.speed) + " " + str(self.trajectory)
 
 
 class Manoeuvre():
@@ -85,18 +87,19 @@ class Trajectory():
         self.manoeuvre = manoeuvre
 
     def __repr__(self):
-        return ("Depart:" + self.pointDepart + " manoeuvre:" + self.manoeuvre + " angle0:" + str(self.angle0))
+        return ("Depart:" + str(self.pointDepart) + " manoeuvre:" + str(self.manoeuvre) + " angle0:" + str(self.angle0))
 
 
 def calculConflit():
     return None
 
 
-def init():
-    Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
+def init(Flights):
+    #Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
     X = []
-    # x0 = [Manoeuvre(calculConflit(f0),0) for f0 in F]
-    # X.append(x0)
+    premierConflits = updateConflits(Flights)
+    x0 = [Manoeuvre(premierConflits[0],0)for f0 in Flights]
+    X.append(x0)
     for k in range(1, N_pop):
         x = []
         for l in range(N_avion):
@@ -111,7 +114,7 @@ def init():
 # Fonction de calcul du cout
 # Prend en parametre f une liste d'avions = trajectoire + vitesse
 
-def cout(f=Flights):
+def cout(f):
     C_ang= 0
     C_time= 0
     for fi in f:
@@ -149,13 +152,17 @@ def conflit2a2_init(f1, f2):
 
 
 
+# update les Conflits et renvoie la liste du premier conflit pour chaque avion
+
 def updateConflits(f):
     N = len(f)
+    print(N)
     liste_Conflits = []
     for i in range(0, N):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
-            liste_Conflits.append(f[i].dConflits[fj][0])
+        liste_Conflits.append(f[i].premierConflit())
+    print(liste_Conflits)
     return liste_Conflits
 
 
@@ -190,14 +197,17 @@ def conflit2a2(f1, f2):
     ptdep2 = f2.trajectory.pointDepart
     v1 = f1.speed
     v2 = f2.speed
-    t01 = f1.manoeuvre.t0
-    alpha1 = f1.manoeuvre.angle
-    t11 = f1.manoeuvre.t1
-    t02 = f2.manoeuvre.t0
-    alpha2 = f2.manoeuvre.angle
-    t12 = f2.manoeuvre.t1
+    t01 = f1.trajectory.manoeuvre.t0
+    alpha1 = f1.trajectory.manoeuvre.angle
+    t11 = f1.trajectory.manoeuvre.t1
+    t02 = f2.trajectory.manoeuvre.t0
+    alpha2 = f2.trajectory.manoeuvre.angle
+    t12 = f2.trajectory.manoeuvre.t1
     dico_temps = {'t01': f1, 't01+t11': f1, 't01+2*t11': f1, 't02': f2, 't02+t12': f2, 't02+2*t12': f2}
-    temps = dico_temps.keys().sort()
+    print(dico_temps.keys())
+    print([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
+    temps = sorted([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
+    print(temps)
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1

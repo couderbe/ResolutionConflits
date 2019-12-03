@@ -2,18 +2,20 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QPoint
 
 import radarview
-import math
 import pb
 import de
 
+Flights = []
 
 if __name__ == "__main__":
     #trajectories = [[QPoint(x, y) for x in range(150)] for y in range(0, 300, 100)]
-    man = pb.Manoeuvre(10,50,math.pi / 7)
-    trajectoire = pb.Trajectory(QPoint(0,0),math.pi/4,man)
-    vol1 = pb.Flight(100,trajectoire)
+    #man = pb.Manoeuvre(10,50,math.pi / 7)
+    #trajectoire = pb.Trajectory(QPoint(0,0),math.pi/4,man)
+    #vol1 = pb.Flight(100,trajectoire)
     #trajectories = [vol1.pointTrajectory()]
-    trajectories = [vol.pointTrajectory() for vol in de.differential_evolution(pb.cout,pb.N_avion, de.F, de.CR, de.maxiter)]
+    Flights = [pb.Flight(100, pb.Trajectory(QPoint(0, 50 * k), 0.5 * k, pb.Manoeuvre(0, 0, 0))) for k in range(pb.N_avion)]
+    solution = de.differential_evolution(Flights,pb.cout,pb.N_avion, de.F, de.CR, 10)
+    trajectories = [vol.pointTrajectory() for vol in solution]
     # Initialize Qt
     app = QtWidgets.QApplication([])
 

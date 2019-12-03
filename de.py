@@ -27,17 +27,17 @@ def ensure_bounds(vec):
     return vec
 
 
-def differential_evolution(cost_func, N_pop, F, CR, maxiter):
+def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
+    # Flights est la liste de vol
     # F est le facteur de mutation
     # CR est le crossover rate
     # maxiter est le nombre de générations pour lequel on veut faire tourner l'algo
-    # N_pop est le nombre de manoeuvres
-    # bounds est l'intervalle des frontières [(x1min,x1max),(x2min,x2max)...,(xNmin,xNmax)]
+    # N_pop est la taille de la population
     # cost_func => fitness
 
     # --- INITIALISER LA POPULATION  ---#
 
-    _, population = pb.init()
+    _, population = pb.init(Flights)
 
     # --- RESOLUTION ---#
 
@@ -105,15 +105,6 @@ def differential_evolution(cost_func, N_pop, F, CR, maxiter):
 
     return gen_sol
 
-
-# --- CONSTANTES ---#
-
-cost_func = func2
-maxiter = 50
-
-# --- TEST ---#
-
-differential_evolution(cost_func,pb.N_avion, F, CR, maxiter)
 
 
 
