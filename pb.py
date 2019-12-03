@@ -15,7 +15,6 @@ class Flight():
     def __init__(self, speed, trajectory):
         self.trajectory = trajectory
         self.speed = np.dot(np.array([speed,0]),rotMatrix(self.trajectory.angle0)) #Un array numpy
-        print(self.speed)
         self.dConflits = {}#dictionnaire des conflits, clés: les avions et valeurs: listes des temps de début et fin de conflits pour tous les moments où les avions sont en conflit
         self.etat = 0
 
@@ -46,7 +45,17 @@ class Flight():
         return self.dConflits.values()
 
     def premierConflit(self):
-        return min(self.listeConflits(), key=lambda x: min([y[0] for y in x]))
+        conflits = self.listeConflits()
+        if len(conflits) == 0:
+            return (T,0)
+        print(conflits)
+        min_par_avion_dispo = []
+        for k in conflits:
+            print("Val conf:" + str(k))
+            min_par_avion_dispo.append(min(k,key= lambda x:x[0]))
+            print(min_par_avion_dispo)
+            print(min(min_par_avion_dispo, key=lambda x: x[0]))
+        return min(min_par_avion_dispo, key=lambda x:x[0])
 
     def __repr__(self):
         return str(self.speed) + " " + str(self.trajectory)
@@ -156,7 +165,6 @@ def conflit2a2_init(f1, f2):
 
 def updateConflits(f):
     N = len(f)
-    print(N)
     liste_Conflits = []
     for i in range(0, N):
         for j in range(i + 1, N):
@@ -189,12 +197,12 @@ def fitness(f):
 
 def rotMatrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
-
+    # Attention peut-être il faut inverser les moins sur les sinus suivant l'orientation de la fenêtre Qt et de l'inversion de l'axe y
 
 # conflits 2 à 2 avec des manoeuvres:!!
 def conflit2a2(f1, f2):
-    ptdep1 = f1.trajectory.pointDepart
-    ptdep2 = f2.trajectory.pointDepart
+    ptdep1 = np.array([float(f1.trajectory.pointDepart.x()),float(f1.trajectory.pointDepart.y())])
+    ptdep2 = np.array([float(f2.trajectory.pointDepart.x()),float(f2.trajectory.pointDepart.y())])
     v1 = f1.speed
     v2 = f2.speed
     t01 = f1.trajectory.manoeuvre.t0
@@ -203,11 +211,11 @@ def conflit2a2(f1, f2):
     t02 = f2.trajectory.manoeuvre.t0
     alpha2 = f2.trajectory.manoeuvre.angle
     t12 = f2.trajectory.manoeuvre.t1
-    dico_temps = {'t01': f1, 't01+t11': f1, 't01+2*t11': f1, 't02': f2, 't02+t12': f2, 't02+2*t12': f2}
-    print(dico_temps.keys())
-    print([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
-    temps = sorted([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
-    print(temps)
+    #dico_temps = {'t01': f1, 't01+t11': f1, 't01+2*t11': f1, 't02': f2, 't02+t12': f2, 't02+2*t12': f2}
+    #print(dico_temps.keys())
+    #temps = sorted([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
+    #print(temps)
+    temps = sorted([(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1
@@ -227,16 +235,21 @@ def conflit2a2(f1, f2):
         elif f2.etat == 3:
             ptdep2 += t11 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
-        a = (v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2
-        b = 2 * ((ptdep1.x - ptdep2.x) * (v1.x - v2.x) + (ptdep1.y - ptdep2.y) * (v1.y - v2.y))
-        c = (ptdep1.x - ptdep2.x) ** 2 + (ptdep1.y - ptdep2.y) ** 2 - d ** 2
+        a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2  ## LE [0] est la coord x de la vitesse et [1] la coord y de la vitesse
+        b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
+        c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
         coeff = [a, b, c]
         racines = np.roots(coeff)
         tdeb = min(racines[0], racines[1])
         tfin = max(racines[0], racines[1])
         if tdeb.imag == 0: #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
-            tmin= max(t,min(tdeb,temps[i+1]))
-            tmax= max(t, min(tfin, temps[i+1]))
+            # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
+            try:
+                tiplus1 = temps[i+1][0]
+            except IndexError:
+                tiplus1 = T
+            tmin= max(t[0],min(tdeb,tiplus1))
+            tmax= max(t[0], min(tfin, tiplus1))
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
                 f2.dConflits[f1] = []
@@ -244,5 +257,5 @@ def conflit2a2(f1, f2):
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
-
-        dico_temps[t].etat = (dico_temps[t].etat + 1) % 4
+        t[1].etat = (t[1].etat + 1) % 4
+        #dico_temps[t].etat = (dico_temps[t].etat + 1) % 4
