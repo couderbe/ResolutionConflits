@@ -13,9 +13,12 @@ if __name__ == "__main__":
     #trajectoire = pb.Trajectory(QPoint(0,0),math.pi/4,man)
     #vol1 = pb.Flight(100,trajectoire)
     #trajectories = [vol1.pointTrajectory()]
-    Flights = [pb.Flight(100, pb.Trajectory(QPoint(0, 50 * k), 0.5 * k, pb.Manoeuvre(0, 0, 0))) for k in range(pb.N_avion)]
-    solution = de.differential_evolution(Flights,pb.cout,pb.N_avion, de.F, de.CR, 10)
-    trajectories = [vol.pointTrajectory() for vol in solution]
+    Flights = [pb.Flight(200, pb.Trajectory(QPoint(0, 10 * k), 0.25 * k, pb.Manoeuvre(0, pb.T, 0))) for k in range(pb.N_avion)]
+    solution = de.differential_evolution(Flights,pb.fitness,pb.N_avion, de.F, de.CR, 50)
+    print("La meilleure solution est "+str(solution))
+    for i,flight in enumerate(Flights):
+        flight.trajectory.manoeuvre = solution[i]
+    trajectories = [vol.pointTrajectory() for vol in Flights]
     # Initialize Qt
     app = QtWidgets.QApplication([])
 

@@ -1,10 +1,12 @@
+import copy
+
 from PyQt5.QtCore import QPoint
 import random
 import numpy as np
 
-T = 200  # Temps total
+T = 400  # Temps total
 N_avion = 20  # Nombre d'avions
-N_pop = 100
+N_pop = 5
 alphaMax = np.pi / 6
 d = 5
 alMc = alphaMax ** 2
@@ -14,6 +16,7 @@ Tc = T ** 2
 class Flight():
     def __init__(self, speed, trajectory):
         self.trajectory = trajectory
+        self.speed2 = speed
         self.speed = np.dot(np.array([speed,0]),rotMatrix(self.trajectory.angle0)) #Un array numpy
         self.dConflits = {}#dictionnaire des conflits, clés: les avions et valeurs: listes des temps de début et fin de conflits pour tous les moments où les avions sont en conflit
         self.etat = 0
@@ -25,19 +28,19 @@ class Flight():
     # angles en radians
     def pointTrajectory(self):
         p0 = self.trajectory.pointDepart
-        p1 = p0 + QPoint(self.speed * self.trajectory.manoeuvre.t0 * np.cos(self.trajectory.angle0),
-                         self.speed * self.trajectory.manoeuvre.t0 * np.sin(self.trajectory.angle0))
-        p2 = p1 + QPoint(self.speed * self.trajectory.manoeuvre.t1 * np.cos(
+        p1 = p0 + QPoint(self.speed2 * self.trajectory.manoeuvre.t0 * np.cos(self.trajectory.angle0),
+                         self.speed2 * self.trajectory.manoeuvre.t0 * np.sin(self.trajectory.angle0))
+        p2 = p1 + QPoint(self.speed2 * self.trajectory.manoeuvre.t1 * np.cos(
             self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed * self.trajectory.manoeuvre.t1 * np.sin(
+                         self.speed2 * self.trajectory.manoeuvre.t1 * np.sin(
                              self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p3 = p2 + QPoint(self.speed * self.trajectory.manoeuvre.t1 * np.cos(
+        p3 = p2 + QPoint(self.speed2 * self.trajectory.manoeuvre.t1 * np.cos(
             -self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed * self.trajectory.manoeuvre.t1 * np.sin(
+                         self.speed2 * self.trajectory.manoeuvre.t1 * np.sin(
                              -self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p4 = p3 + QPoint(self.speed * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.cos(
+        p4 = p3 + QPoint(self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.cos(
             self.trajectory.angle0),
-                         self.speed * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.sin(
+                         self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.sin(
                              self.trajectory.angle0))
         return [p0, p1, p2, p3, p4]
 
@@ -48,13 +51,9 @@ class Flight():
         conflits = self.listeConflits()
         if len(conflits) == 0:
             return (T,0)
-        print(conflits)
         min_par_avion_dispo = []
         for k in conflits:
-            print("Val conf:" + str(k))
             min_par_avion_dispo.append(min(k,key= lambda x:x[0]))
-            print(min_par_avion_dispo)
-            print(min(min_par_avion_dispo, key=lambda x: x[0]))
         return min(min_par_avion_dispo, key=lambda x:x[0])
 
     def __repr__(self):
@@ -96,7 +95,7 @@ class Trajectory():
         self.manoeuvre = manoeuvre
 
     def __repr__(self):
-        return ("Depart:" + str(self.pointDepart) + " manoeuvre:" + str(self.manoeuvre) + " angle0:" + str(self.angle0))
+        return ("Depart:" + str(self.pointDepart) + " manoeuvre:" + str(self.manoeuvre) + " angle0:" + str(self.angle0*180/np.pi))
 
 
 def calculConflit():
@@ -107,7 +106,7 @@ def init(Flights):
     #Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
     X = []
     premierConflits = updateConflits(Flights)
-    x0 = [Manoeuvre(premierConflits[0],0)for f0 in Flights]
+    x0 = [Manoeuvre(premierConflits[k][0],premierConflits[k][1],0)for k in range(N_avion)]
     X.append(x0)
     for k in range(1, N_pop):
         x = []
@@ -121,15 +120,14 @@ def init(Flights):
 
 
 # Fonction de calcul du cout
-# Prend en parametre f une liste d'avions = trajectoire + vitesse
+# Prend en parametre x une liste de manoeuvre (une pour chaque avion)
 
-def cout(f):
-    C_ang= 0
-    C_time= 0
-    for fi in f:
-        manoeuvre = (fi.trajectory).manoeuvre
-        C_ang+= manoeuvre.angle ** 2
-        C_time+= manoeuvre.t1 ** 2 + ((T - manoeuvre.t0) ** 2)
+def cout(x):
+    C_ang = 0
+    C_time = 0
+    for manoeuvre in x:
+        C_ang += manoeuvre.angle ** 2
+        C_time = C_time + (manoeuvre.t1 ** 2) + ((T - manoeuvre.t0) ** 2)
     return C_ang/alMc + C_time/Tc
 
 
@@ -170,30 +168,38 @@ def updateConflits(f):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
         liste_Conflits.append(f[i].premierConflit())
-    print(liste_Conflits)
     return liste_Conflits
 
 
+# Fonction de duree de conflit: Prend en parametre x une liste de manoeuvre (une pour chaque avion)
 
-
-# Fonction de duree de conflit: prend en parametre f une liste d'avions
-
-def dureeConflit(f):
+def dureeConflit(liste_Conflits):
     duree = 0
-    for fi in f:
-        if fi.dConflits != {}:
-            key_mini = min(fi.dConflits.keys(), key=(lambda k: fi.dConflits[k][0]))
-            duree += fi.dConflits[key_mini][1] - fi.dConflits[key_mini][0]
+    for val in liste_Conflits:
+        if len(val) != 0:
+            for i in val:
+                for j in i:
+                    duree += j[1] - j[0]
     return duree / T
 
 
-# fonction fitness:
-def fitness(f):
-    if dureeConflit(f) > 0:
-        return 1 / (2 + dureeConflit(f))
+# fonction fitness: # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
+def fitness(F,x):
+    f = copy.deepcopy(F)
+    liste_Conflits = calculConflitPourFitness(f)  #Contient tout les conflits de chaque vol
+    if dureeConflit(liste_Conflits) > 0:
+        return 1 / (2 + dureeConflit(liste_Conflits))
     else:
-        return 1 / 2 + 1 / cout(f)
+        return 1 / 2 + 1 / cout(x)
 
+def calculConflitPourFitness(f):
+    N = len(f)
+    liste_Conflits = []
+    for i in range(0, N):
+        for j in range(i + 1, N):
+            conflit2a2(f[i], f[j])
+        liste_Conflits.append(f[i].listeConflits())
+    return liste_Conflits
 
 def rotMatrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])

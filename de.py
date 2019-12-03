@@ -1,8 +1,8 @@
 import random
 import pb
 
-F = 1.5 # à voir
-CR = 0.8 # à voir
+F = 0.7 # à voir
+CR = 0.1 # à voir
 # on genere le X à la génération N+1 et on vérifie s'il est valable avec la fonction fitness
 
 
@@ -38,7 +38,7 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
     # --- INITIALISER LA POPULATION  ---#
 
     _, population = pb.init(Flights)
-
+    print("Population:  ------>  "+str(population))
     # --- RESOLUTION ---#
 
     for i in range(1, maxiter + 1):
@@ -46,7 +46,7 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
 
         gen_scores = []  # Stockage des résultats
 
-       # candidats = range(0, N_avion) #candidats correspond au petit x : liste des manoeuvres
+       # candidats = range(0, N_pop) #candidats correspond au petit x : liste des manoeuvres
         for j in range(0, pb.N_pop):
 
             # --- MUTATION ---#
@@ -85,10 +85,12 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             # --- SELECTION ---#
 
             # On compare notre nouvel individu avec l'individu actuel
-            score_trial = cost_func(v_trial)
-            score_target = cost_func(x_t)
+            #score_trial = cost_func(v_trial)
+            #score_target = cost_func(x_t)
+            score_trial = cost_func(Flights,v_trial)
+            score_target = cost_func(Flights,v_trial)
 
-            if score_trial < score_target:
+            if score_trial > score_target:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
                 print('  >', score_trial, v_trial)
