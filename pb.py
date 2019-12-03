@@ -147,6 +147,7 @@ def conflit2a2_init(f1, f2):
             f2.dConflits[f1].append((tdeb, min(tfin, T)))
 
 
+
 def updateConflits(f):
     N = len(f)
     liste_Conflits = []
