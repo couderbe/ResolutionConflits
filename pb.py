@@ -92,7 +92,7 @@ def calculConflit():
 
 
 def init():
-    F = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
+    Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
     X = []
     # x0 = [Manoeuvre(calculConflit(f0),0) for f0 in F]
     # X.append(x0)
@@ -104,7 +104,7 @@ def init():
             t1 = random.randint(0, T)
             x.append(Manoeuvre(t0, t1, angle))
         X.append(x)
-    return F, X
+    return Flights, X
 
 
 # Fonction de calcul du cout
