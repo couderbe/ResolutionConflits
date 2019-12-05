@@ -3,12 +3,13 @@ import copy
 from PyQt5.QtCore import QPoint
 import random
 import numpy as np
+import time
 
-T = 10  # Temps total
+T = 50  # Temps total
 N_avion = 20  # Nombre d'avions
 N_pop = 10
 alphaMax = np.pi / 6
-d = 5
+d = 5 #Distance de séparation
 alMc = alphaMax ** 2
 Tc = T ** 2
 
@@ -105,8 +106,13 @@ def calculConflit():
 def init(Flights):
     #Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
     X = []
-    premierConflits = updateConflits(Flights)
-    x0 = [Manoeuvre(premierConflits[k][0],premierConflits[k][1],0)for k in range(N_avion)]
+    print(Flights)
+    premierConflits = updateConflits(Flights) # Liste des premiers conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
+
+    time.sleep(5)
+
+    print("Premier conflits:  "+ str(premierConflits))
+    x0 = [Manoeuvre(premierConflits[k][0],0,0)for k in range(N_avion)] #Le t0 on prend le début du premier conflit mais je sais pas si c'est utile et pas de t1 surtout !!!!
     X.append(x0)
     for k in range(1, N_pop):
         x = []
@@ -160,13 +166,17 @@ def conflit2a2_init(f1, f2):
 
 
 # update les Conflits et renvoie la liste du premier conflit pour chaque avion
+# Argument est une liste de Flight
 
 def updateConflits(f):
+    print("UpdateConflits: " + str(f))
     N = len(f)
     liste_Conflits = []
     for i in range(0, N):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
+            print("Conflits f " + str(i) + str(f[i].dConflits))
+            print("Conflits f " + str(j) + str(f[j].dConflits))
         liste_Conflits.append(f[i].premierConflit())
     return liste_Conflits
 
@@ -198,6 +208,7 @@ def calculConflitPourFitness(f):
     for i in range(0, N):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
+
         liste_Conflits.append(f[i].listeConflits())
     return liste_Conflits
 
@@ -246,8 +257,10 @@ def conflit2a2(f1, f2):
         c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
         coeff = [a, b, c]
         racines = np.roots(coeff)
-        tdeb = min(racines[0], racines[1])
-        tfin = max(racines[0], racines[1])
+        print(racines)
+        tdeb = min(racines[0].real, racines[1].real)
+        tfin = max(racines[0].real, racines[1].real)
+        print((tdeb,tfin))
         if tdeb.imag == 0: #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
             try:
@@ -256,6 +269,7 @@ def conflit2a2(f1, f2):
                 tiplus1 = T
             tmin= max(t[0],min(tdeb,tiplus1))
             tmax= max(t[0], min(tfin, tiplus1))
+            print((tmin,tmax))
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
                 f2.dConflits[f1] = []
@@ -263,5 +277,11 @@ def conflit2a2(f1, f2):
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
+
+        print(f1.etat)
+        print(f2.etat)
         t[1].etat = (t[1].etat + 1) % 4
-        #dico_temps[t].etat = (dico_temps[t].etat + 1) % 4
+    # Pour que les etats soient revenus à 0 pour fois suivantes
+    f1.etat = 0
+    f2.etat = 0
+
