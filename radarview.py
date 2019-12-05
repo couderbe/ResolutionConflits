@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPen
 
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
-TRAJECTORY_COLOR = "grey"
+TRAJECTORY_COLOR = "red"
 TRAJECTORY_WIDTH = 25
 
 
