@@ -5,11 +5,11 @@ import random
 import numpy as np
 import time
 
-T = 50  # Temps total
+T = 500  # Temps total
 N_avion = 20  # Nombre d'avions
 N_pop = 10
 alphaMax = np.pi / 6
-d = 5 #Distance de séparation
+d = 1000#5 #Distance de séparation
 alMc = alphaMax ** 2
 Tc = T ** 2
 
@@ -178,6 +178,7 @@ def updateConflits(f):
             print("Conflits f " + str(i) + str(f[i].dConflits))
             print("Conflits f " + str(j) + str(f[j].dConflits))
         liste_Conflits.append(f[i].premierConflit())
+    print(f[0].dConflits)
     return liste_Conflits
 
 
@@ -213,7 +214,7 @@ def calculConflitPourFitness(f):
     return liste_Conflits
 
 def rotMatrix(theta):
-    return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    return np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
     # Attention peut-être il faut inverser les moins sur les sinus suivant l'orientation de la fenêtre Qt et de l'inversion de l'axe y
 
 # conflits 2 à 2 avec des manoeuvres:!!
@@ -228,11 +229,16 @@ def conflit2a2(f1, f2):
     t02 = f2.trajectory.manoeuvre.t0
     alpha2 = f2.trajectory.manoeuvre.angle
     t12 = f2.trajectory.manoeuvre.t1
+    print(f1)
+    print(f2)
     #dico_temps = {'t01': f1, 't01+t11': f1, 't01+2*t11': f1, 't02': f2, 't02+t12': f2, 't02+2*t12': f2}
     #print(dico_temps.keys())
     #temps = sorted([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
     #print(temps)
-    temps = sorted([(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
+
+
+    # Il y en a 6 je pense qu'il en faut 7 je le rajoute juste avant pour quand les 2 sont à 0
+    temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1
@@ -256,12 +262,13 @@ def conflit2a2(f1, f2):
         b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
         c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
         coeff = [a, b, c]
+        print("Coeffs: " + str(coeff))
         racines = np.roots(coeff)
         print(racines)
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
         print((tdeb,tfin))
-        if tdeb.imag == 0: #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
+        if racines[0].imag == 0: #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
             try:
                 tiplus1 = temps[i+1][0]
@@ -270,17 +277,23 @@ def conflit2a2(f1, f2):
             tmin= max(t[0],min(tdeb,tiplus1))
             tmax= max(t[0], min(tfin, tiplus1))
             print((tmin,tmax))
+            print(f1.dConflits)
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
                 f2.dConflits[f1] = []
+                print(f1.dConflits)
 
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
+                print(f1.dConflits)
 
         print(f1.etat)
         print(f2.etat)
-        t[1].etat = (t[1].etat + 1) % 4
+        try:
+            temps[i+1][1].etat = (temps[i+1][1].etat + 1) % 4
+        except IndexError:
+            pass
     # Pour que les etats soient revenus à 0 pour fois suivantes
     f1.etat = 0
     f2.etat = 0
