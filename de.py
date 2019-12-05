@@ -1,8 +1,8 @@
 import random
 import pb
-
-F = 0.7 # à voir
-CR = 0.1 # à voir
+import copy
+F = 0.9 # à voir
+CR = 0.7 # à voir
 # on genere le X à la génération N+1 et on vérifie s'il est valable avec la fonction fitness
 
 
@@ -20,7 +20,6 @@ def func2 (x) :
 def ensure_bounds(vec):
 
     for manoeuver in vec :
-
         manoeuver.t0 = sorted ([0,manoeuver.t0, pb.T]) [1]
         manoeuver.t1 = sorted ([0,manoeuver.t1, pb.T]) [1]
         manoeuver.angle = sorted ([- pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
@@ -54,19 +53,20 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             candidats = list(range(0, pb.N_pop))
             candidats.pop(j)
             random_index = random.sample(candidats, 3)
-
             x_1 = population[random_index[0]]
             x_2 = population[random_index[1]]
             x_3 = population[random_index[2]]
             x_t = population[j]  # Individu cible
+            print("Début x_t:" + str(x_t))
+            print("Début x_1:" + str(x_1))
+            print("Début x_2:" + str(x_2))
+            print("Début x_3:" + str(x_3))
 
             # Définition du vecteur x_diff = x_3 - x_2
-            x_diff = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)]
-
+            x_diff = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)] # Soustrait les composantes
             # Définition du vecteur mutant v_mutant par multiplication de x_diff par F et ajout de x_1 (formule du cours)
             v_mutant = [x_1_i + F * x_diff_i for x_1_i, x_diff_i in zip(x_1, x_diff)]
             v_mutant = ensure_bounds(v_mutant)
-
             # --- CROSSOVER ---#
 
             v_trial = []
@@ -87,16 +87,18 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             # On compare notre nouvel individu avec l'individu actuel
             #score_trial = cost_func(v_trial)
             #score_target = cost_func(x_t)
-            score_trial = cost_func(Flights,v_trial)
-            score_target = cost_func(Flights,v_trial)
-
+            flights_trial = [pb.Flight(F.speed2,pb.Trajectory(F.trajectory.pointDepart,F.trajectory.angle0,v_trial[i])) for i,F in enumerate(Flights)]
+            flights_target = [pb.Flight(F.speed2, pb.Trajectory(F.trajectory.pointDepart, F.trajectory.angle0, x_t[i])) for i, F in enumerate(Flights)]
+            score_trial = cost_func(flights_trial,v_trial)
+            print("Flight_target:  "+str(flights_target))
+            score_target = cost_func(flights_target,x_t) #D'une génération à l'autre ilfaut penser que le score gagnant sera là en target à la prochaine géné
             if score_trial > score_target:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
-                print('  >', score_trial, v_trial)
+                print('Trial  >', score_trial, v_trial)
 
             else:
-                print('  >', score_target, x_t)
+                print('Target  >', score_target, x_t)
                 gen_scores.append(score_target)
 
             # --- RESULTATS ---#
@@ -104,7 +106,10 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             #gen_avg = sum(gen_scores) / N_avion  # fitness moyen de la génération actuelle
             #gen_best = min(gen_scores)  # fitness du meilleur individu
             gen_sol = population[gen_scores.index(max(gen_scores))]  # solution du meilleur individu
-
+            print("Début x_t:" + str(x_t))
+            print("Début x_1:" + str(x_1))
+            print("Début x_2:" + str(x_2))
+            print("Début x_3:" + str(x_3))
     return gen_sol
 
 

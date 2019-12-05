@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 T = 500  # Temps total
-N_avion = 20  # Nombre d'avions
+N_avion = 2  # Nombre d'avions
 N_pop = 10
 alphaMax = np.pi / 6
 d = 1000#5 #Distance de séparation
@@ -109,7 +109,7 @@ def init(Flights):
     print(Flights)
     premierConflits = updateConflits(Flights) # Liste des premiers conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
 
-    time.sleep(5)
+    #time.sleep(5)
 
     print("Premier conflits:  "+ str(premierConflits))
     x0 = [Manoeuvre(premierConflits[k][0],0,0)for k in range(N_avion)] #Le t0 on prend le début du premier conflit mais je sais pas si c'est utile et pas de t1 surtout !!!!
@@ -169,16 +169,12 @@ def conflit2a2_init(f1, f2):
 # Argument est une liste de Flight
 
 def updateConflits(f):
-    print("UpdateConflits: " + str(f))
     N = len(f)
     liste_Conflits = []
     for i in range(0, N):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
-            print("Conflits f " + str(i) + str(f[i].dConflits))
-            print("Conflits f " + str(j) + str(f[j].dConflits))
         liste_Conflits.append(f[i].premierConflit())
-    print(f[0].dConflits)
     return liste_Conflits
 
 
@@ -195,13 +191,13 @@ def dureeConflit(liste_Conflits):
 
 
 # fonction fitness: # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
-def fitness(F,x):
-    f = copy.deepcopy(F)
+def fitness(f,x):
     liste_Conflits = calculConflitPourFitness(f)  #Contient tout les conflits de chaque vol
-    if dureeConflit(liste_Conflits) > 0:
-        return 1 / (2 + dureeConflit(liste_Conflits))
+    dureeConf = dureeConflit(liste_Conflits)
+    if dureeConf > 0:
+        return 1 / (2 + dureeConf)
     else:
-        return 1 / 2 + 1 / cout(x)
+        return 1 / 2 + 1 / (2+cout(x))
 
 def calculConflitPourFitness(f):
     N = len(f)
@@ -209,7 +205,6 @@ def calculConflitPourFitness(f):
     for i in range(0, N):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
-
         liste_Conflits.append(f[i].listeConflits())
     return liste_Conflits
 
@@ -229,8 +224,10 @@ def conflit2a2(f1, f2):
     t02 = f2.trajectory.manoeuvre.t0
     alpha2 = f2.trajectory.manoeuvre.angle
     t12 = f2.trajectory.manoeuvre.t1
-    print(f1)
-    print(f2)
+    #print(f1)
+    #print(f2)
+
+
     #dico_temps = {'t01': f1, 't01+t11': f1, 't01+2*t11': f1, 't02': f2, 't02+t12': f2, 't02+2*t12': f2}
     #print(dico_temps.keys())
     #temps = sorted([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
@@ -239,6 +236,7 @@ def conflit2a2(f1, f2):
 
     # Il y en a 6 je pense qu'il en faut 7 je le rajoute juste avant pour quand les 2 sont à 0
     temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
+    print(temps)
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1
@@ -262,12 +260,12 @@ def conflit2a2(f1, f2):
         b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
         c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
         coeff = [a, b, c]
-        print("Coeffs: " + str(coeff))
+        #print("Coeffs: " + str(coeff))
         racines = np.roots(coeff)
-        print(racines)
+        #print(racines)
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
-        print((tdeb,tfin))
+        #print((tdeb,tfin))
         if racines[0].imag == 0: #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
             try:
@@ -276,20 +274,18 @@ def conflit2a2(f1, f2):
                 tiplus1 = T
             tmin= max(t[0],min(tdeb,tiplus1))
             tmax= max(t[0], min(tfin, tiplus1))
-            print((tmin,tmax))
-            print(f1.dConflits)
+            #print((tmin,tmax))
+            #print(f1.dConflits)
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
                 f2.dConflits[f1] = []
-                print(f1.dConflits)
 
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
-                print(f1.dConflits)
 
-        print(f1.etat)
-        print(f2.etat)
+        #print(f1.etat)
+        #print(f2.etat)
         try:
             temps[i+1][1].etat = (temps[i+1][1].etat + 1) % 4
         except IndexError:
