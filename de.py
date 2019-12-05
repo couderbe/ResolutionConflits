@@ -42,7 +42,6 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
 
     for i in range(1, maxiter + 1):
         print('GENERATION:', i)
-
         gen_scores = []  # Stockage des résultats
 
        # candidats = range(0, N_pop) #candidats correspond au petit x : liste des manoeuvres
@@ -53,14 +52,10 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             candidats = list(range(0, pb.N_pop))
             candidats.pop(j)
             random_index = random.sample(candidats, 3)
-            x_1 = population[random_index[0]]
-            x_2 = population[random_index[1]]
-            x_3 = population[random_index[2]]
+            x_1 = [pb.Manoeuvre(man.t0,man.t1,man.angle) for man in population[random_index[0]]]
+            x_2 = [pb.Manoeuvre(man.t0,man.t1,man.angle) for man in population[random_index[1]]]
+            x_3 = [pb.Manoeuvre(man.t0,man.t1,man.angle) for man in population[random_index[2]]]
             x_t = population[j]  # Individu cible
-            print("Début x_t:" + str(x_t))
-            print("Début x_1:" + str(x_1))
-            print("Début x_2:" + str(x_2))
-            print("Début x_3:" + str(x_3))
 
             # Définition du vecteur x_diff = x_3 - x_2
             x_diff = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)] # Soustrait les composantes
@@ -90,7 +85,6 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             flights_trial = [pb.Flight(F.speed2,pb.Trajectory(F.trajectory.pointDepart,F.trajectory.angle0,v_trial[i])) for i,F in enumerate(Flights)]
             flights_target = [pb.Flight(F.speed2, pb.Trajectory(F.trajectory.pointDepart, F.trajectory.angle0, x_t[i])) for i, F in enumerate(Flights)]
             score_trial = cost_func(flights_trial,v_trial)
-            print("Flight_target:  "+str(flights_target))
             score_target = cost_func(flights_target,x_t) #D'une génération à l'autre ilfaut penser que le score gagnant sera là en target à la prochaine géné
             if score_trial > score_target:
                 population[j] = v_trial
@@ -106,10 +100,8 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             #gen_avg = sum(gen_scores) / N_avion  # fitness moyen de la génération actuelle
             #gen_best = min(gen_scores)  # fitness du meilleur individu
             gen_sol = population[gen_scores.index(max(gen_scores))]  # solution du meilleur individu
-            print("Début x_t:" + str(x_t))
-            print("Début x_1:" + str(x_1))
-            print("Début x_2:" + str(x_2))
-            print("Début x_3:" + str(x_3))
+
+
     return gen_sol
 
 

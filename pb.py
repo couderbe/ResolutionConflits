@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 T = 500  # Temps total
-N_avion = 2  # Nombre d'avions
+N_avion = 5  # Nombre d'avions
 N_pop = 10
 alphaMax = np.pi / 6
 d = 1000#5 #Distance de séparation
@@ -236,7 +236,6 @@ def conflit2a2(f1, f2):
 
     # Il y en a 6 je pense qu'il en faut 7 je le rajoute juste avant pour quand les 2 sont à 0
     temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
-    print(temps)
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1
