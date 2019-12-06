@@ -13,19 +13,20 @@ CR = 0.7 # à voir
 # Code de la mutation : On sélectionne trois individus de la génération courante différents deux à deux mais aussi différents de l'individu que l'on souhaite muter. Le nouvel individu v est donné par la relation v=x1+F(x2-x3) où F est le facteur de mutation entre 0 et 2#
 # Problème : Il se peut que l'individu créé v soit en dehors des limites bounds, il faut donc écrire une fonction qui vérifie si v est en dehors des frontières ou non. S'il l'est, on déplace v à la frontière la plus proche. Cette fonction s'appelle ensure_bounds#
 
-def func2 (x) :
-    return x[0].t1
+
 
 
 def ensure_bounds(vec):
 
     for manoeuver in vec :
-        manoeuver.t0=sorted([0,manoeuver.t0, pb.T])[1]
-        manoeuver.t1 = sorted([0, manoeuver.t1, pb.T-manoeuver.t0])[1]
-        manoeuver.t0 = sorted([-pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
 
-
-
+            manoeuver.t0 = sorted ([ 0, manoeuver.t0, pb.T])[1]
+            manoeuver.theta = sorted([0,manoeuver.theta, 1])[1]
+            manoeuver.angle = sorted ([- pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
+            t1 = (pb.T - manoeuver.t0) * manoeuver.theta
+            if t1 == 0 :
+                manoeuver.angle = 0
+                manoeuver.t0 = pb.T
     return vec
 
 
@@ -55,9 +56,9 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             candidats = list(range(0, pb.N_pop))
             candidats.pop(j)
             random_index = random.sample(candidats, 3)
-            x_1 = [pb.Manoeuvre(man.t0,man.t1,man.angle) for man in population[random_index[0]]]
-            x_2 = [pb.Manoeuvre(man.t0,man.t1,man.angle) for man in population[random_index[1]]]
-            x_3 = [pb.Manoeuvre(man.t0,man.t1,man.angle) for man in population[random_index[2]]]
+            x_1 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[0]]]
+            x_2 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[1]]]
+            x_3 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[2]]]
             x_t = population[j]  # Individu cible
 
             # Définition du vecteur x_diff = x_3 - x_2
