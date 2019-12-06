@@ -31,17 +31,17 @@ class Flight():
         p0 = self.trajectory.pointDepart
         p1 = p0 + QPoint(self.speed2 * self.trajectory.manoeuvre.t0 * np.cos(self.trajectory.angle0),
                          self.speed2 * self.trajectory.manoeuvre.t0 * np.sin(self.trajectory.angle0))
-        p2 = p1 + QPoint(self.speed2 * self.trajectory.manoeuvre.t1 * np.cos(
+        p2 = p1 + QPoint(self.speed2 * self.trajectory.manoeuvre.theta*(T-self.trajectory.manoeuvre.t0) * np.cos(
             self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed2 * self.trajectory.manoeuvre.t1 * np.sin(
+                         self.speed2 * self.trajectory.manoeuvre.theta*(T-self.trajectory.manoeuvre.t0) * np.sin(
                              self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p3 = p2 + QPoint(self.speed2 * self.trajectory.manoeuvre.t1 * np.cos(
+        p3 = p2 + QPoint(self.speed2 * self.trajectory.manoeuvre.theta*(T-self.trajectory.manoeuvre.t0) * np.cos(
             -self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed2 * self.trajectory.manoeuvre.t1 * np.sin(
+                         self.speed2 * self.trajectory.manoeuvre.theta*(T-self.trajectory.manoeuvre.t0) * np.sin(
                              -self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p4 = p3 + QPoint(self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.cos(
+        p4 = p3 + QPoint(self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.theta*(T-self.trajectory.manoeuvre.t0)) * np.cos(
             self.trajectory.angle0),
-                         self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.t1) * np.sin(
+                         self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.theta*(T-self.trajectory.manoeuvre.t0)) * np.sin(
                              self.trajectory.angle0))
         return [p0,p1,p2,p3,p4]
 
@@ -62,22 +62,22 @@ class Flight():
 
 
 class Manoeuvre():
-    def __init__(self, t0, t1, angle):
+    def __init__(self, t0, theta, angle):
         self.t0 = t0
         self.angle = angle
-        self.t1 = t1
+        self.theta = theta
 
     def __add__(self, other):
-        return Manoeuvre(self.t0 + other.t0,self.t1+other.t1,self.angle+ other.angle)
+        return Manoeuvre(self.t0 + other.t0,self.theta+other.theta,self.angle+ other.angle)
 
     def __sub__(self, other):
-        return Manoeuvre(self.t0 - other.t0,self.t1-other.t1,self.angle- other.angle)
+        return Manoeuvre(self.t0 - other.t0,self.theta-other.theta,self.angle- other.angle)
 
     def __rmul__(self, other):
-        return Manoeuvre(self.t0*other,self.t1*other,self.angle*other)
+        return Manoeuvre(self.t0*other,self.theta*other,self.angle*other)
 
     def __repr__(self):
-        return ("t0:" + str(self.t0) + " t1:" + str(self.t1) + " angle:" + str(self.angle))
+        return ("t0:" + str(self.t0) + " theta:" + str(self.theta) + " angle:" + str(self.angle))
 
 
 class Trajectory():
@@ -109,10 +109,9 @@ def init(Flights):
         x = []
         for l in range(N_avion):
             angle = random.uniform(-np.pi / 6, np.pi / 6)
-            t0 = random.randint(0, T)  # Les temps sont entier à voir
+            t0 = random.uniform(0, T)
             theta = random.random()
-            t1 = theta*(T-t0)
-            x.append(Manoeuvre(t0, t1, angle))
+            x.append(Manoeuvre(t0, theta, angle))
         X.append(x)
     return Flights, X
 
@@ -125,7 +124,7 @@ def cout(x):
     C_time = 0
     for manoeuvre in x:
         C_ang += manoeuvre.angle ** 2
-        C_time = C_time + (manoeuvre.t1 ** 2) + ((T - manoeuvre.t0) ** 2)
+        C_time = C_time + ((manoeuvre.theta*(T-manoeuvre.t0)) ** 2) + ((T - manoeuvre.t0) ** 2)
     return C_ang/alMc + C_time/Tc
 
 # update les Conflits et renvoie la liste du premier conflit pour chaque avion
@@ -141,7 +140,7 @@ def updateConflits(f):
     return liste_Conflits
 
 
-# Fonction de duree de conflit: Prend en parametre x une liste de manoeuvre (une pour chaque avion)
+# Fonction de duree de conflit: Prend en parametre x une liste de manoeuvres (une pour chaque avion)
 
 def dureeConflit(liste_Conflits):
     duree = 0
@@ -158,7 +157,7 @@ def fitness(f,x):
     liste_Conflits = updateConflits(f)  #Contient tout les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
     print(dureeConf)
-    if dureeConf > 0:
+    if dureeConf > 10**(-5):
         print("fitness")
         return 1 / (2 + dureeConf)
     else:
@@ -178,10 +177,10 @@ def conflit2a2(f1, f2):
     v2 = f2.speed
     t01 = f1.trajectory.manoeuvre.t0
     alpha1 = f1.trajectory.manoeuvre.angle
-    t11 = f1.trajectory.manoeuvre.t1
+    t11 = f1.trajectory.manoeuvre.theta*(T-t01)
     t02 = f2.trajectory.manoeuvre.t0
     alpha2 = f2.trajectory.manoeuvre.angle
-    t12 = f2.trajectory.manoeuvre.t1
+    t12 = f2.trajectory.manoeuvre.theta*(T-t02)
     #print(f1)
     #print(f2)
 
@@ -194,6 +193,7 @@ def conflit2a2(f1, f2):
 
     # Il y en a 6 je pense qu'il en faut 7 je le rajoute juste avant pour quand les 2 sont à 0
     temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
+    print(temps)
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1
@@ -223,7 +223,7 @@ def conflit2a2(f1, f2):
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
         #print((tdeb,tfin))
-        if racines[0].imag == 0: #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
+        if abs(racines[0].imag)<10**(-5): #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
             try:
                 tiplus1 = temps[i+1][0]
