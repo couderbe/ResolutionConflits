@@ -68,22 +68,13 @@ class Manoeuvre():
         self.t1 = t1
 
     def __add__(self, other):
-        self.t0 += other.t0
-        self.t1 += other.t1
-        self.angle += other.angle
-        return self
+        return Manoeuvre(self.t0 + other.t0,self.t1+other.t1,self.angle+ other.angle)
 
     def __sub__(self, other):
-        self.t0 -= other.t0
-        self.t1 -= other.t1
-        self.angle -= other.angle
-        return self
+        return Manoeuvre(self.t0 - other.t0,self.t1-other.t1,self.angle- other.angle)
 
     def __rmul__(self, other):
-        self.t0 *= other
-        self.t1 *= other
-        self.angle *= other
-        return self
+        return Manoeuvre(self.t0*other,self.t1*other,self.angle*other)
 
     def __repr__(self):
         return ("t0:" + str(self.t0) + " t1:" + str(self.t1) + " angle:" + str(self.angle))
@@ -107,19 +98,20 @@ def init(Flights):
     #Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
     X = []
     print(Flights)
-    premierConflits = updateConflits(Flights) # Liste des premiers conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
+    premierConflits = updateConflits(Flights) # Liste des conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
 
     #time.sleep(5)
 
     print("Premier conflits:  "+ str(premierConflits))
-    x0 = [Manoeuvre(premierConflits[k][0],0,0)for k in range(N_avion)] #Le t0 on prend le début du premier conflit mais je sais pas si c'est utile et pas de t1 surtout !!!!
+    x0 = [Manoeuvre(T,0,0)for k in range(N_avion)] #Le t0 on prend le début du premier conflit mais je sais pas si c'est utile et pas de t1 surtout !!!!
     X.append(x0)
     for k in range(1, N_pop):
         x = []
         for l in range(N_avion):
             angle = random.uniform(-np.pi / 6, np.pi / 6)
             t0 = random.randint(0, T)  # Les temps sont entier à voir
-            t1 = random.randint(0, T)
+            theta = random.random()
+            t1 = theta*(T-t0)
             x.append(Manoeuvre(t0, t1, angle))
         X.append(x)
     return Flights, X
@@ -136,35 +128,6 @@ def cout(x):
         C_time = C_time + (manoeuvre.t1 ** 2) + ((T - manoeuvre.t0) ** 2)
     return C_ang/alMc + C_time/Tc
 
-
-# Fonction conflit2a2: renvoie les temps de conflit tdeb et tfin entre deux avions
-def conflit2a2_init(f1, f2):
-    ptdep1 = f1.trajectory.pointDepart
-    ptdep2 = f2.trajectory.pointDepart
-    v1 = f1.speed
-    v2 = f2.speed
-    a = (v1.x - v2.x) ** 2 + (v1.y - v2.y) ** 2
-    b = 2 * ((ptdep1.x - ptdep2.x) * (v1.x - v2.x) + (ptdep1.y - ptdep2.y) * (v1.y - v2.y))
-    c = (ptdep1.x - ptdep2.x) ** 2 + (ptdep1.y - ptdep2.y) ** 2 - d ** 2
-    coeff = [a, b, c]
-    racines = np.roots(coeff)
-    tdeb = min(racines[0], racines[1])
-    tfin = max(racines[0], racines[1])
-    if tdeb.imag == 0:
-        if len(f1.dConflits) == 0:
-            f1.dConflits = []
-        if len(f2.dConflits) == 0:
-            f2.dConflits = []
-        if tdeb < 0:
-            if tfin > 0:
-                f1.dConflits[f2].append((0, min(tfin, T)))
-                f2.dConflits[f1].append((0, min(tfin, T)))
-        elif tdeb < T:
-            f1.dConflits[f2].append((tdeb, min(tfin, T)))
-            f2.dConflits[f1].append((tdeb, min(tfin, T)))
-
-
-
 # update les Conflits et renvoie la liste du premier conflit pour chaque avion
 # Argument est une liste de Flight
 
@@ -174,7 +137,7 @@ def updateConflits(f):
     for i in range(0, N):
         for j in range(i + 1, N):
             conflit2a2(f[i], f[j])
-        liste_Conflits.append(f[i].premierConflit())
+        liste_Conflits.append(f[i].listeConflits())
     return liste_Conflits
 
 
@@ -187,26 +150,21 @@ def dureeConflit(liste_Conflits):
             for i in val:
                 for j in i:
                     duree += j[1] - j[0]
-    return duree / T
+    return duree /(2*T)
 
 
 # fonction fitness: # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
 def fitness(f,x):
-    liste_Conflits = calculConflitPourFitness(f)  #Contient tout les conflits de chaque vol
+    liste_Conflits = updateConflits(f)  #Contient tout les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
+    print(dureeConf)
     if dureeConf > 0:
+        print("fitness")
         return 1 / (2 + dureeConf)
     else:
+        print("cout")
         return 1 / 2 + 1 / (2+cout(x))
 
-def calculConflitPourFitness(f):
-    N = len(f)
-    liste_Conflits = []
-    for i in range(0, N):
-        for j in range(i + 1, N):
-            conflit2a2(f[i], f[j])
-        liste_Conflits.append(f[i].listeConflits())
-    return liste_Conflits
 
 def rotMatrix(theta):
     return np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
