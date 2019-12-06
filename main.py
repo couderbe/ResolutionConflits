@@ -16,7 +16,7 @@ if __name__ == "__main__":
     #vol1 = pb.Flight(100,trajectoire)
     #trajectories = [vol1.pointTrajectory()]
     Flights = [pb.Flight(80, pb.Trajectory(QPoint(4000*np.cos(0.3*k), 4000*np.sin(0.3*k)),np.pi+phase(complex(4000*np.cos(0.3*k),4000*np.sin(0.3*k))), pb.Manoeuvre(pb.T, 0, 0))) for k in range(pb.N_avion)]
-    solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 100)
+    solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 250)
     print("La meilleure solution est "+str(solution))
     for i,flight in enumerate(Flights):
         flight.trajectory.manoeuvre = solution[i]
