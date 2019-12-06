@@ -23,10 +23,15 @@ def ensure_bounds(vec):
         teta =  manoeuver.t1 /(pb.T - manoeuver.t0)
         if teta < 0 :
             manoeuver.t1 = 0
-        if teta > 1 :
+            manoeuver.t0 = T
+            manoeuver.angle = 0
+        elif teta > 1 :
             manoeuver.t1 = pb.T - manoeuver.t0
-        manoeuver.t0 = sorted ([0, manoeuver.t1 , pb.T])[1]
-        manoeuver.angle = sorted ([- pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
+            manoeuver.t0 = sorted ([0, manoeuver.t1 , pb.T])[1]
+            manoeuver.angle = sorted ([- pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
+        else :
+            manoeuver.t0 = sorted([0, manoeuver.t1, pb.T])[1]
+            manoeuver.angle = sorted([- pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
 
     return vec
 
