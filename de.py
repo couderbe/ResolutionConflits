@@ -23,7 +23,7 @@ def ensure_bounds(vec):
         teta =  manoeuver.t1 /(pb.T - manoeuver.t0)
         if teta < 0 :
             manoeuver.t1 = 0
-            manoeuver.t0 = T
+            manoeuver.t0 = pb.T
             manoeuver.angle = 0
         elif teta > 1 :
             manoeuver.t1 = pb.T - manoeuver.t0
