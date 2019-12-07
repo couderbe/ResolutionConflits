@@ -94,11 +94,13 @@ class RadarView(QtWidgets.QWidget):
         self.scene.addItem(item_group)
         #airport_group.setZValue(AIRPORT_Z_VALUE)
 
-        # Taxiways
+        # Trajectories and starting points
         pen = QPen(QtGui.QColor(TRAJECTORY_COLOR), TRAJECTORY_WIDTH)
         pen.setCapStyle(QtCore.Qt.RoundCap)
         pen.setJoinStyle(QtCore.Qt.MiterJoin)
         for trajectory in trajectories:
+            # Ajout du premier point
+            item_group.addEllipse(10, 10, 100, 50);
             path = QtGui.QPainterPath()
             path.moveTo(trajectory[0].x(), trajectory[0].y())
             for xy in trajectory[1:]:
@@ -107,3 +109,25 @@ class RadarView(QtWidgets.QWidget):
             item.setPen(pen)
             item.setToolTip('Trajectoire ' + 'trajectory.name')
 
+    ##A modifier attention les temps des points sont pas les mêmes dans les trajectoires
+    #def update_aircraft_items(self):
+    #    """ updates Plots views """
+    #   new_flights = self.radarView.simulation.current_flights
+    #  # add new aircraft items for flights who joined
+    #    for f in set(new_flights) - set(self.current_flights):
+    #        item = AircraftItem(self.radarView.simulation, f, self)  # create an item
+    #        self.radarView.scene.addItem(item)  # add it to scene
+    #        self.aircraft_items_dict[f] = item  # add it to item dict
+    #    # remove aircraft items for flights who left
+    #    for f in set(self.current_flights) - set(new_flights):
+    #       item = self.aircraft_items_dict.pop(f)  # get item from flight in the dictionary (and remove it)
+    #        self.radarView.scene.removeItem(item)   # remove it also from scene
+    #    # refresh current flights list
+    #    self.current_flights = new_flights
+    #    # get conflicting flights
+    #    conf = self.radarView.simulation.conflicts
+    #    # update positions of the current aircraft items
+    #    for aircraft in self.aircraft_items_dict.values():
+    #        aircraft.update_position(aircraft.flight in conf)
+    #    # tell everyone who is listening that there is a flight list update
+    #    self.radarView.flight_list_changed_signal.emit(self.current_flights)
