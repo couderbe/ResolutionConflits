@@ -45,6 +45,16 @@ class Flight():
                              self.trajectory.angle0))
         return [p0,p1,p2,p3,p4]
 
+
+    ## Fonction en cours qui doit donner une liste de plein de points de la trajectoire pour dépacer ensite les avion grace à Qt
+    def completeTrajectory(self):
+        listePoints = [self.trajectory.pointDepart]
+        [p0,p1,p2,p3,p4] = self.pointTrajectory()
+        for t in range(1,T):
+            if t < self.trajectory.manoeuvre.t0:
+                listePoints.append()
+
+
     def listeConflits(self):
         return self.dConflits.values()
 

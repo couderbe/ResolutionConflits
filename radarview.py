@@ -39,6 +39,7 @@ class RadarView(QtWidgets.QWidget):
         # Settings
         self.setWindowTitle("Resolution de conflits aeriens")
         self.resize(WIDTH, HEIGHT)
+        self.currentPoint = 0
 
         # create components
         root_layout = QtWidgets.QVBoxLayout(self)
@@ -57,6 +58,30 @@ class RadarView(QtWidgets.QWidget):
         # add components to the root_layout
         root_layout.addWidget(self.view)
 
+        # add a slider to change the simulation time increment
+        # slider
+        sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        sld.setMinimum(0)
+        sld.setMaximum(5)
+        sld.setValue(self.currentPoint)
+
+        sliderlbl = QtWidgets.QLabel(str(self.currentPoint))
+        sliderlbl.setFixedWidth(50)
+
+        # slot
+        def changeCurrentPoint(val):
+            self.currentPoint = val
+            sliderlbl.setText(str(val))
+
+        # connect signal to slot
+        sld.valueChanged.connect(changeCurrentPoint)
+        self.speed_slider = sld
+
+        # add slider and labels to toolbar
+        toolbar = QtWidgets.QHBoxLayout()
+        toolbar.addWidget(sld)
+        toolbar.addWidget(sliderlbl)
+        root_layout.addLayout(toolbar)
         # show the window
         self.show()
 
