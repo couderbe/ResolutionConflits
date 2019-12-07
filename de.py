@@ -2,7 +2,7 @@ import random
 import pb
 import copy
 F = 0.7 # à voir
-CR = 0.05 # à voir
+CR = 0.3 # à voir
 # on genere le X à la génération N+1 et on vérifie s'il est valable avec la fonction fitness
 
 
@@ -104,8 +104,6 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             #gen_avg = sum(gen_scores) / N_avion  # fitness moyen de la génération actuelle
             #gen_best = min(gen_scores)  # fitness du meilleur individu
             gen_sol = population[gen_scores.index(max(gen_scores))]  # solution du meilleur individu
-
-
     return gen_sol
 
 
