@@ -5,8 +5,8 @@ from PyQt5.QtGui import QPen
 
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
-TRAJECTORY_COLOR = "red"
-TRAJECTORY_WIDTH = 25
+TRAJECTORY_COLOR = "black"
+TRAJECTORY_WIDTH = 100
 
 
 class PanZoomView(QtWidgets.QGraphicsView):
@@ -100,7 +100,7 @@ class RadarView(QtWidgets.QWidget):
         pen.setJoinStyle(QtCore.Qt.MiterJoin)
         for trajectory in trajectories:
             # Ajout du premier point
-            item_group.addEllipse(10, 10, 100, 50);
+            #item_group.addEllipse(10, 10, 100, 50);
             path = QtGui.QPainterPath()
             path.moveTo(trajectory[0].x(), trajectory[0].y())
             for xy in trajectory[1:]:

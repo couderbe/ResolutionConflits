@@ -2,7 +2,7 @@ import random
 import pb
 import copy
 F = 0.7 # à voir
-CR = 0.3 # à voir
+CR = 0.5 # à voir
 # on genere le X à la génération N+1 et on vérifie s'il est valable avec la fonction fitness
 
 

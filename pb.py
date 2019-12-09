@@ -5,11 +5,11 @@ import random
 import numpy as np
 import time
 
-T = 150  # Temps total
-N_avion = 15  # Nombre d'avions
+T = 240  # Temps total
+N_avion = 10 # Nombre d'avions
 N_pop = 40
 alphaMax = np.pi / 6
-d = 1000#5 #Distance de séparation
+d = 10000 #5 #Distance de séparation
 alMc = alphaMax ** 2
 Tc = T ** 2
 
