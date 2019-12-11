@@ -1,4 +1,5 @@
 import math
+import pb
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QPoint
@@ -7,18 +8,20 @@ from PyQt5.QtWidgets import QGraphicsRectItem, QGraphicsItemGroup, QGraphicsElli
 
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
-TRAJECTORY_COLOR = "black"
 TRAJECTORY_WIDTH = 100
 PLANE_CIRCLE_SIZE = 500
+CONFLICT_CIRCLE_SIZE = pb.d
 
-N_POINT_TRAJECTORY = 100
+N_POINT_TRAJECTORY = pb.T
 
 # constant colors
-FLIGHT_COLOR = "blue"     # Departure color
+FLIGHT_COLOR = "blue"
+TRAJECTORY_COLOR = "black"
+CONFLICT_CIRCLE_COLOR = QColor(0,255,0,100)
 
 # creating the brushes
 FLIGHT_BRUSH = QBrush(QColor(FLIGHT_COLOR))
-
+CONFLICT_CIRCLE_BRUSH = QBrush(CONFLICT_CIRCLE_COLOR)
 
 class PanZoomView(QtWidgets.QGraphicsView):
     """An interactive view that supports Pan and Zoom functions"""
@@ -131,21 +134,30 @@ class RadarView(QtWidgets.QWidget):
         """ updates Plots views """
         liste_item = self.scene.items()
         for item in liste_item:
-            if str(type(item)) == "<class 'radarview.AircraftItem'>":
+            if str(type(item)) == "<class 'radarview.AircraftItem'>": #Pas beau ça
                 item.changePos(t)
 
 class AircraftItem(QGraphicsItemGroup):
 
     def __init__(self,trajectoire):
         super().__init__(None)
-        self.item = QGraphicsEllipseItem()
-        self.item.setRect(0,0,PLANE_CIRCLE_SIZE,PLANE_CIRCLE_SIZE)
-        self.item.setBrush(FLIGHT_BRUSH)
-        self.addToGroup(self.item)
+        # Création du point de l'avion
+        self.item_avion = QGraphicsEllipseItem()
+        self.item_avion.setRect(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2,PLANE_CIRCLE_SIZE,PLANE_CIRCLE_SIZE) #Les coords x,y centrent le cercle
+        self.item_avion.setBrush(FLIGHT_BRUSH)
+        self.addToGroup(self.item_avion)
         self.trajectoire = trajectoire
-        self.item.setPos(trajectoire[0])
+        #self.item_avion.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
+
+        #Création du cercle de conflit pour l'avion
+        self.item_conflit = QGraphicsEllipseItem()
+        self.item_conflit.setRect(-CONFLICT_CIRCLE_SIZE/2, -CONFLICT_CIRCLE_SIZE/2, CONFLICT_CIRCLE_SIZE, CONFLICT_CIRCLE_SIZE) #Les coords x,y centrent le cercle
+        self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH)
+        self.addToGroup(self.item_conflit)
+        self.trajectoire = trajectoire
+        #self.item_conflit.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
+        self.setPos(trajectoire[0] + QPoint(0,0))
 
     def changePos(self,t):
         point = self.trajectoire[t]
-        point = point + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2) # Pour que le point soit bien centré
-        self.item.setPos(point)
+        self.setPos(point)

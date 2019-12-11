@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 T = 240  # Temps total
-N_avion = 10 # Nombre d'avions
+N_avion = 4 # Nombre d'avions
 N_pop = 40
 alphaMax = np.pi / 6
 d = 10000 #5 #Distance de séparation
