@@ -47,12 +47,23 @@ class Flight():
 
 
     ## Fonction en cours qui doit donner une liste de plein de points de la trajectoire pour dépacer ensite les avion grace à Qt
-    def completeTrajectory(self):
-        listePoints = [self.trajectory.pointDepart]
-        [p0,p1,p2,p3,p4] = self.pointTrajectory()
-        for t in range(1,T):
-            if t < self.trajectory.manoeuvre.t0:
-                listePoints.append()
+    def completeTrajectory(self,nbrPoint):
+        intervaleTemps = T/nbrPoint
+        resultat = [self.trajectory.pointDepart]
+        for k in range(1,nbrPoint):
+            if k*intervaleTemps <= self.trajectory.manoeuvre.t0:
+                resultat.append(resultat[k-1] + QPoint(intervaleTemps*self.speed2*np.cos(self.trajectory.angle0),
+                                                       intervaleTemps*self.speed2*np.sin(self.trajectory.angle0)))
+            elif k*intervaleTemps <= (self.trajectory.manoeuvre.t0 + self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2)):
+                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.trajectory.angle0 + self.trajectory.manoeuvre.angle),
+                                                         intervaleTemps * self.speed2 * np.sin(self.trajectory.angle0 + self.trajectory.manoeuvre.angle)))
+            elif k * intervaleTemps <= (self.trajectory.manoeuvre.t0 + self.trajectory.manoeuvre.theta * ((T - self.trajectory.manoeuvre.t0))):
+                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.trajectory.angle0 - self.trajectory.manoeuvre.angle),
+                                                         intervaleTemps * self.speed2 * np.sin(self.trajectory.angle0 - self.trajectory.manoeuvre.angle)))
+            else:
+                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.trajectory.angle0),
+                                                         intervaleTemps * self.speed2 * np.sin(self.trajectory.angle0)))
+        return resultat
 
 
     def listeConflits(self):
@@ -227,12 +238,9 @@ def conflit2a2(f1, f2):
         b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
         c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
         coeff = [a, b, c]
-        #print("Coeffs: " + str(coeff))
         racines = np.roots(coeff)
-        #print(racines)
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
-        #print((tdeb,tfin))
         if abs(racines[0].imag)<10**(-5): #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
             try:
@@ -241,8 +249,6 @@ def conflit2a2(f1, f2):
                 tiplus1 = T
             tmin= max(t[0],min(tdeb,tiplus1))
             tmax= max(t[0], min(tfin, tiplus1))
-            #print((tmin,tmax))
-            #print(f1.dConflits)
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
                 f2.dConflits[f1] = []
@@ -250,9 +256,6 @@ def conflit2a2(f1, f2):
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
-
-        #print(f1.etat)
-        #print(f2.etat)
         try:
             temps[i+1][1].etat = (temps[i+1][1].etat + 1) % 4
         except IndexError:

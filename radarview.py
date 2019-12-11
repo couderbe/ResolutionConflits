@@ -9,7 +9,10 @@ WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
 TRAJECTORY_COLOR = "black"
 TRAJECTORY_WIDTH = 100
-PLANE_CIRCLE_SIZE = 1500
+PLANE_CIRCLE_SIZE = 500
+
+N_POINT_TRAJECTORY = 100
+
 # constant colors
 FLIGHT_COLOR = "blue"     # Departure color
 
@@ -71,7 +74,7 @@ class RadarView(QtWidgets.QWidget):
         # slider
         sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         sld.setMinimum(0)
-        sld.setMaximum(4)
+        sld.setMaximum(N_POINT_TRAJECTORY-1)
         sld.setValue(self.currentPoint)
 
         sliderlbl = QtWidgets.QLabel(str(self.currentPoint))
@@ -112,7 +115,7 @@ class RadarView(QtWidgets.QWidget):
         pen.setJoinStyle(QtCore.Qt.MiterJoin)
         for f in flights:
             path = QtGui.QPainterPath()
-            trajectory = f.pointTrajectory()
+            trajectory = f.completeTrajectory(N_POINT_TRAJECTORY)
             path.moveTo(trajectory[0].x(), trajectory[0].y())
             for xy in trajectory[1:]:
                 path.lineTo(xy.x(), xy.y())
@@ -144,5 +147,5 @@ class AircraftItem(QGraphicsItemGroup):
 
     def changePos(self,t):
         point = self.trajectoire[t]
-        point = point + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2)
+        point = point + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2) # Pour que le point soit bien centré
         self.item.setPos(point)
