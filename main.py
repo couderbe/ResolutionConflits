@@ -7,9 +7,11 @@ import numpy as np
 from cmath import phase
 import de
 import time
+import random
 
 Flights = []
 m = 2*3.1416/pb.N_avion
+
 
 if __name__ == "__main__":
     #trajectories = [[QPoint(x, y) for x in range(150)] for y in range(0, 300, 100)]
@@ -18,12 +20,13 @@ if __name__ == "__main__":
     #vol1 = pb.Flight(100,trajectoire)
     #trajectories = [vol1.pointTrajectory()]
     t = time.time()
-    Flights = [pb.Flight(250, pb.Trajectory(QPoint(30000*np.cos(m*k), 30000*np.sin(m*k)),np.pi+phase(complex(30000*np.cos(m*k),30000*np.sin(m*k))), pb.Manoeuvre(pb.T, 0, 0))) for k in range(pb.N_avion)]
-    solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 100)
+    v = [1 for k in range(pb.N_avion)] # avoir la vitesse des avions (différentes)
+    Flights = [pb.Flight(250, QPoint(v[k ]*30000*np.cos(m*k), v[k]*30000*np.sin(m*k)),np.pi+phase(complex(v[k]*30000*np.cos(m*k),v[k]*30000*np.sin(m*k))), pb.Manoeuvre(pb.T, 0, 0)) for k in range(pb.N_avion)]
+    solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 150)
     print("Temps d'exécution: " + str((time.time()-t)/60))
     print("La meilleure solution est "+str(solution))
     for i,flight in enumerate(Flights):
-        flight.trajectory.manoeuvre = solution[i]
+        flight.manoeuvre = solution[i]
     trajectories = [vol.pointTrajectory() for vol in Flights]
     # Initialize Qt
     app = QtWidgets.QApplication([])

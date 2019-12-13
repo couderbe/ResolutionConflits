@@ -7,20 +7,23 @@ import time
 
 T = 240  # Temps total
 N_avion = 4 # Nombre d'avions
-N_pop = 40
+N_pop = 50
 alphaMax = np.pi / 6
-d = 10000 #5 #Distance de séparation
+d = 5000 #5 #Distance de séparation
 alMc = alphaMax ** 2
 Tc = T ** 2
 
 
 class Flight():
-    def __init__(self, speed, trajectory):
-        self.trajectory = trajectory
+    def __init__(self, speed, pointDepart, angle0, manoeuvre):
+        self.pointDepart = pointDepart
+        self.angle0 = angle0
+        self.manoeuvre = manoeuvre
         self.speed2 = speed
-        self.speed = np.dot(np.array([speed,0]),rotMatrix(self.trajectory.angle0)) #Un array numpy
+        self.speed = np.dot(np.array([speed,0]),rotMatrix(self.angle0)) #Un array numpy
         self.dConflits = {}#dictionnaire des conflits, clés: les avions et valeurs: listes des temps de début et fin de conflits pour tous les moments où les avions sont en conflit
         self.etat = 0
+
 
     # Permet de savoir à quelle étape de la manoeuvre en est l'avion: 0=avant la manoeuvre; 1= montée initiale; 2= retour à la trajectoire;3 manoeuvre
     # terminée. Initialisé à etape 0 (trajectoire initiale)
@@ -28,41 +31,41 @@ class Flight():
     # return 5 QPoints qui sont debut,fin et cassures de la trajectoire
     # angles en radians
     def pointTrajectory(self):
-        p0 = self.trajectory.pointDepart
-        p1 = p0 + QPoint(self.speed2 * self.trajectory.manoeuvre.t0 * np.cos(self.trajectory.angle0),
-                         self.speed2 * self.trajectory.manoeuvre.t0 * np.sin(self.trajectory.angle0))
-        p2 = p1 + QPoint(self.speed2 * self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2) * np.cos(
-            self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed2 * self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2) * np.sin(
-                             self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p3 = p2 + QPoint(self.speed2 * self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2) * np.cos(
-            -self.trajectory.manoeuvre.angle + self.trajectory.angle0),
-                         self.speed2 * self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2) * np.sin(
-                             -self.trajectory.manoeuvre.angle + self.trajectory.angle0))
-        p4 = p3 + QPoint(self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2)) * np.cos(
-            self.trajectory.angle0),
-                         self.speed2 * (T - self.trajectory.manoeuvre.t0 - 2 * self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2)) * np.sin(
-                             self.trajectory.angle0))
+        p0 = self.pointDepart
+        p1 = p0 + QPoint(self.speed2 * self.manoeuvre.t0 * np.cos(self.angle0),
+                         self.speed2 * self.manoeuvre.t0 * np.sin(self.angle0))
+        p2 = p1 + QPoint(self.speed2 * self.manoeuvre.theta*((T-self.manoeuvre.t0)/2) * np.cos(
+            self.manoeuvre.angle + self.angle0),
+                         self.speed2 * self.manoeuvre.theta*((T-self.manoeuvre.t0)/2) * np.sin(
+                             self.manoeuvre.angle + self.angle0))
+        p3 = p2 + QPoint(self.speed2 * self.manoeuvre.theta*((T-self.manoeuvre.t0)/2) * np.cos(
+            -self.manoeuvre.angle + self.angle0),
+                         self.speed2 * self.manoeuvre.theta*((T-self.manoeuvre.t0)/2) * np.sin(
+                             -self.manoeuvre.angle + self.angle0))
+        p4 = p3 + QPoint(self.speed2 * (T - self.manoeuvre.t0 - 2 * self.manoeuvre.theta*((T-self.manoeuvre.t0)/2)) * np.cos(
+            self.angle0),
+                         self.speed2 * (T - self.manoeuvre.t0 - 2 * self.manoeuvre.theta*((T-self.manoeuvre.t0)/2)) * np.sin(
+                             self.angle0))
         return [p0,p1,p2,p3,p4]
 
 
     ## Fonction en cours qui doit donner une liste de plein de points de la trajectoire pour dépacer ensite les avion grace à Qt
     def completeTrajectory(self,nbrPoint):
         intervaleTemps = T/nbrPoint
-        resultat = [self.trajectory.pointDepart]
+        resultat = [self.pointDepart]
         for k in range(1,nbrPoint):
-            if k*intervaleTemps <= self.trajectory.manoeuvre.t0:
-                resultat.append(resultat[k-1] + QPoint(intervaleTemps*self.speed2*np.cos(self.trajectory.angle0),
-                                                       intervaleTemps*self.speed2*np.sin(self.trajectory.angle0)))
-            elif k*intervaleTemps <= (self.trajectory.manoeuvre.t0 + self.trajectory.manoeuvre.theta*((T-self.trajectory.manoeuvre.t0)/2)):
-                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.trajectory.angle0 + self.trajectory.manoeuvre.angle),
-                                                         intervaleTemps * self.speed2 * np.sin(self.trajectory.angle0 + self.trajectory.manoeuvre.angle)))
-            elif k * intervaleTemps <= (self.trajectory.manoeuvre.t0 + self.trajectory.manoeuvre.theta * ((T - self.trajectory.manoeuvre.t0))):
-                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.trajectory.angle0 - self.trajectory.manoeuvre.angle),
-                                                         intervaleTemps * self.speed2 * np.sin(self.trajectory.angle0 - self.trajectory.manoeuvre.angle)))
+            if k*intervaleTemps <= self.manoeuvre.t0:
+                resultat.append(resultat[k-1] + QPoint(intervaleTemps*self.speed2*np.cos(self.angle0),
+                                                       intervaleTemps*self.speed2*np.sin(self.angle0)))
+            elif k*intervaleTemps <= (self.manoeuvre.t0 + self.manoeuvre.theta*((T-self.manoeuvre.t0)/2)):
+                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.angle0 + self.manoeuvre.angle),
+                                                         intervaleTemps * self.speed2 * np.sin(self.angle0 + self.manoeuvre.angle)))
+            elif k * intervaleTemps <= (self.manoeuvre.t0 + self.manoeuvre.theta * ((T - self.manoeuvre.t0))):
+                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.angle0 - self.manoeuvre.angle),
+                                                         intervaleTemps * self.speed2 * np.sin(self.angle0 - self.manoeuvre.angle)))
             else:
-                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.trajectory.angle0),
-                                                         intervaleTemps * self.speed2 * np.sin(self.trajectory.angle0)))
+                resultat.append(resultat[k - 1] + QPoint(intervaleTemps * self.speed2 * np.cos(self.angle0),
+                                                         intervaleTemps * self.speed2 * np.sin(self.angle0)))
         return resultat
 
 
@@ -79,7 +82,7 @@ class Flight():
         return min(min_par_avion_dispo, key=lambda x:x[0])
 
     def __repr__(self):
-        return str(self.speed) + " " + str(self.trajectory)
+        return ("Vitesse:" + " " + str(self.speed) + " " + "Depart:" + str(self.pointDepart) + " Manoeuvre:" + str(self.manoeuvre) + " Angle0:" + str(self.angle0*180/np.pi))
 
 
 class Manoeuvre():
@@ -101,14 +104,12 @@ class Manoeuvre():
         return ("t0:" + str(self.t0) + " theta:" + str(self.theta) + " angle:" + str(self.angle))
 
 
-class Trajectory():
-    def __init__(self, pointDepart, angle0, manoeuvre):
-        self.pointDepart = pointDepart
-        self.angle0 = angle0
-        self.manoeuvre = manoeuvre
+#class Trajectory():
+ #   def __init__(self, pointDepart, angle0, manoeuvre):
+  #      self.pointDepart = pointDepart
+  #      self.angle0 = angle0
+  #      self.manoeuvre = manoeuvre
 
-    def __repr__(self):
-        return ("Depart:" + str(self.pointDepart) + " manoeuvre:" + str(self.manoeuvre) + " angle0:" + str(self.angle0*180/np.pi))
 
 
 def calculConflit():
@@ -192,16 +193,16 @@ def rotMatrix(theta):
 
 # conflits 2 à 2 avec des manoeuvres:!!
 def conflit2a2(f1, f2):
-    ptdep1 = np.array([float(f1.trajectory.pointDepart.x()),float(f1.trajectory.pointDepart.y())])
-    ptdep2 = np.array([float(f2.trajectory.pointDepart.x()),float(f2.trajectory.pointDepart.y())])
+    ptdep1 = np.array([float(f1.pointDepart.x()),float(f1.pointDepart.y())])
+    ptdep2 = np.array([float(f2.pointDepart.x()),float(f2.pointDepart.y())])
     v1 = f1.speed
     v2 = f2.speed
-    t01 = f1.trajectory.manoeuvre.t0
-    alpha1 = f1.trajectory.manoeuvre.angle
-    t11 = f1.trajectory.manoeuvre.theta*(T-t01)/2
-    t02 = f2.trajectory.manoeuvre.t0
-    alpha2 = f2.trajectory.manoeuvre.angle
-    t12 = f2.trajectory.manoeuvre.theta*(T-t02)/2
+    t01 = f1.manoeuvre.t0
+    alpha1 = f1.manoeuvre.angle
+    t11 = f1.manoeuvre.theta*(T-t01)/2
+    t02 = f2.manoeuvre.t0
+    alpha2 = f2.manoeuvre.angle
+    t12 = f2.manoeuvre.theta*(T-t02)/2
     #print(f1)
     #print(f2)
 

@@ -2,7 +2,7 @@ import random
 import pb
 import copy
 F = 0.7 # à voir
-CR = 0.05 # à voir
+CR = 0.2 # à voir
 # on genere le X à la génération N+1 et on vérifie s'il est valable avec la fonction fitness
 
 
@@ -86,8 +86,8 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             # On compare notre nouvel individu avec l'individu actuel
             #score_trial = cost_func(v_trial)
             #score_target = cost_func(x_t)
-            flights_trial = [pb.Flight(F.speed2,pb.Trajectory(F.trajectory.pointDepart,F.trajectory.angle0,v_trial[i])) for i,F in enumerate(Flights)]
-            flights_target = [pb.Flight(F.speed2, pb.Trajectory(F.trajectory.pointDepart, F.trajectory.angle0, x_t[i])) for i, F in enumerate(Flights)]
+            flights_trial = [pb.Flight(F.speed2,F.pointDepart,F.angle0,v_trial[i]) for i,F in enumerate(Flights)]
+            flights_target = [pb.Flight(F.speed2, F.pointDepart, F.angle0, x_t[i]) for i, F in enumerate(Flights)]
             score_trial = cost_func(flights_trial,v_trial)
             score_target = cost_func(flights_target,x_t) #D'une génération à l'autre ilfaut penser que le score gagnant sera là en target à la prochaine géné
             if score_trial > score_target:
