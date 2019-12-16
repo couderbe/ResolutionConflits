@@ -6,7 +6,7 @@ import numpy as np
 import time
 
 T = 240  # Temps total
-N_avion = 4 # Nombre d'avions
+N_avion = 2 # Nombre d'avions
 N_pop = 50
 alphaMax = np.pi / 6
 d = 5000 #5 #Distance de séparation
@@ -181,6 +181,10 @@ def fitness(f):
         #print("fitness")
         return 1 / (2 + dureeConf)
     else:
+        print("sleep")
+        print(f)
+        print(liste_Conflits)
+        #time.sleep(5)
         return 1 / 2 + 1 / (2+cout(f))
 
 
@@ -188,15 +192,17 @@ def rotMatrix(theta):
     return np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
     # Attention peut-être il faut inverser les moins sur les sinus suivant l'orientation de la fenêtre Qt et de l'inversion de l'axe y
 
-# conflits 2 à 2 avec des manoeuvres:!!
+# conflits 2 à 2 avec des vols
 def conflit2a2(f1, f2):
+    f1.dConflits = {}
+    f2.dConflits = {}
     ptdep1 = np.array([float(f1.pointDepart.x()),float(f1.pointDepart.y())])
     ptdep2 = np.array([float(f2.pointDepart.x()),float(f2.pointDepart.y())])
     v1 = f1.speed
     v2 = f2.speed
     t01 = f1.manoeuvre.t0
     alpha1 = f1.manoeuvre.angle
-    t11 = f1.manoeuvre.theta*(T-t01)/2
+    t11 = f1.manoeuvre.theta*(T-t01)/2 #Pour avoir un temps à partir de theta
     t02 = f2.manoeuvre.t0
     alpha2 = f2.manoeuvre.angle
     t12 = f2.manoeuvre.theta*(T-t02)/2
@@ -230,7 +236,7 @@ def conflit2a2(f1, f2):
             ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(-2 * alpha2), v2)
         elif f2.etat == 3:
-            ptdep2 += t11 * v2
+            ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
         a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2  ## LE [0] est la coord x de la vitesse et [1] la coord y de la vitesse
         b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
@@ -254,6 +260,15 @@ def conflit2a2(f1, f2):
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
+                if tmax==tmin :
+                    print("00000")
+                    print(f1)
+                    print(f2)
+                    print(coeff)
+                    print(racines)
+                    print(tmin,tmax)
+                    print(tiplus1)
+                    pass
         try:
             temps[i+1][1].etat = (temps[i+1][1].etat + 1) % 4
         except IndexError:

@@ -25,8 +25,9 @@ if __name__ == "__main__":
     solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 15)
     print("Temps d'exécution: " + str((time.time()-t)/60))
     print("La meilleure solution est "+str(solution))
-    for i,flight in enumerate(Flights):
-        flight.manoeuvre = solution[i]
+    for elt in solution:
+        print("Truc de conflit: " + str(elt.dConflits))
+    print(pb.conflit2a2(solution[0],solution[1]))
     trajectories = [vol.pointTrajectory() for vol in solution]
     # Initialize Qt
     app = QtWidgets.QApplication([])
