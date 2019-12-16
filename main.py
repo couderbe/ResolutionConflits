@@ -22,7 +22,7 @@ if __name__ == "__main__":
     t = time.time()
     v = [1 for k in range(pb.N_avion)] # avoir la vitesse des avions (différentes)
     Flights = [pb.Flight(250, QPoint(v[k ]*30000*np.cos(m*k), v[k]*30000*np.sin(m*k)),np.pi+phase(complex(v[k]*30000*np.cos(m*k),v[k]*30000*np.sin(m*k))), pb.Manoeuvre(pb.T, 0, 0)) for k in range(pb.N_avion)]
-    solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 150)
+    solution = de.differential_evolution(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 15)
     print("Temps d'exécution: " + str((time.time()-t)/60))
     print("La meilleure solution est "+str(solution))
     for i,flight in enumerate(Flights):

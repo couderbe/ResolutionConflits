@@ -117,7 +117,6 @@ def calculConflit():
 
 
 def init(Flights):
-    #Flights = [Flight(100, Trajectory(QPoint(0, 50 * k), 0.5 * k, Manoeuvre(0, 0, 0))) for k in range(N_avion)]
     X = []
     print(Flights)
     premierConflits = updateConflits(Flights) # Liste des conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
@@ -179,11 +178,11 @@ def fitness(f,x):
     liste_Conflits = updateConflits(f)  #Contient tout les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
     #print(dureeConf)
-    if dureeConf > 10**(-5):
+    #if dureeConf > 10**(-5):
+    if dureeConf != 0:
         #print("fitness")
         return 1 / (2 + dureeConf)
     else:
-        #print("cout")
         return 1 / 2 + 1 / (2+cout(x))
 
 

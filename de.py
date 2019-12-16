@@ -43,7 +43,11 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
     _, population = pb.init(Flights)
     print("Population:  ------>  "+str(population))
     # --- RESOLUTION ---#
-
+    score = cost_func(Flights,population[0])
+    for i,elt in enumerate(population):
+        print(elt)
+        print(cost_func(Flights,elt))
+    print(score)
     for i in range(1, maxiter + 1):
         print('GENERATION:', i)
         gen_scores = []  # Stockage des résultats
@@ -86,10 +90,10 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             # On compare notre nouvel individu avec l'individu actuel
             #score_trial = cost_func(v_trial)
             #score_target = cost_func(x_t)
-            flights_trial = [pb.Flight(F.speed2,F.pointDepart,F.angle0,v_trial[i]) for i,F in enumerate(Flights)]
+            flights_trial = [pb.Flight(F.speed2,F.pointDepart,F.angle0,v_trial[i]) for i, F in enumerate(Flights)]
             flights_target = [pb.Flight(F.speed2, F.pointDepart, F.angle0, x_t[i]) for i, F in enumerate(Flights)]
             score_trial = cost_func(flights_trial,v_trial)
-            score_target = cost_func(flights_target,x_t) #D'une génération à l'autre ilfaut penser que le score gagnant sera là en target à la prochaine géné
+            score_target = cost_func(flights_target,x_t) #D'une génération à l'autre il faut penser que le score gagnant sera là en target à la prochaine géné
             if score_trial > score_target:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
