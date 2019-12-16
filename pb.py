@@ -118,34 +118,32 @@ def calculConflit():
 
 def init(Flights):
     X = []
+    liste_Flights = []
+    liste_Flights.append(Flights)
+
     print(Flights)
     premierConflits = updateConflits(Flights) # Liste des conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
 
-    #time.sleep(5)
-
-    print("Premier conflits:  "+ str(premierConflits))
-    x0 = [Manoeuvre(T,0,0)for k in range(N_avion)] #Le t0 on prend le début du premier conflit mais je sais pas si c'est utile et pas de t1 surtout !!!!
-    X.append(x0)
-    for k in range(1, N_pop):
-        x = []
+    for k in range(1,N_pop):
+        vols = []
         for l in range(N_avion):
             angle = random.uniform(-np.pi / 6, np.pi / 6)
             t0 = random.uniform(0, T)
             theta = random.random()
-            x.append(Manoeuvre(t0, theta, angle))
-        X.append(x)
-    return Flights, X
+            vols.append(Flight(Flights[l].speed2,Flights[l].pointDepart, Flights[l].angle0, Manoeuvre(t0,theta,angle)))
+        liste_Flights.append(vols)
+    return liste_Flights
 
 
 # Fonction de calcul du cout
 # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
 
-def cout(x):
+def cout(f):
     C_ang = 0
     C_time = 0
-    for manoeuvre in x:
-        C_ang += manoeuvre.angle ** 2
-        C_time = C_time + (((manoeuvre.theta/2)*(T-manoeuvre.t0)) ** 2) + ((T - manoeuvre.t0) ** 2)
+    for vol in f:
+        C_ang += vol.manoeuvre.angle ** 2
+        C_time = C_time + (((vol.manoeuvre.theta/2)*(T-vol.manoeuvre.t0)) ** 2) + ((T - vol.manoeuvre.t0) ** 2)
     return C_ang/alMc + C_time/Tc
 
 # update les Conflits et renvoie la liste du premier conflit pour chaque avion
@@ -174,7 +172,7 @@ def dureeConflit(liste_Conflits):
 
 
 # fonction fitness: # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
-def fitness(f,x):
+def fitness(f):
     liste_Conflits = updateConflits(f)  #Contient tout les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
     #print(dureeConf)
@@ -183,7 +181,7 @@ def fitness(f,x):
         #print("fitness")
         return 1 / (2 + dureeConf)
     else:
-        return 1 / 2 + 1 / (2+cout(x))
+        return 1 / 2 + 1 / (2+cout(f))
 
 
 def rotMatrix(theta):

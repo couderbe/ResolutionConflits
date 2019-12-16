@@ -40,14 +40,13 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
 
     # --- INITIALISER LA POPULATION  ---#
 
-    _, population = pb.init(Flights)
+    population = pb.init(Flights)
     print("Population:  ------>  "+str(population))
     # --- RESOLUTION ---#
-    score = cost_func(Flights,population[0])
+    score = {}
     for i,elt in enumerate(population):
-        print(elt)
-        print(cost_func(Flights,elt))
-    print(score)
+        score[i] = cost_func(elt)
+    print("score: " + str(score))
     for i in range(1, maxiter + 1):
         print('GENERATION:', i)
         gen_scores = []  # Stockage des résultats
@@ -60,10 +59,13 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             candidats = list(range(0, pb.N_pop))
             candidats.pop(j)
             random_index = random.sample(candidats, 3)
-            x_1 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[0]]]
-            x_2 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[1]]]
-            x_3 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[2]]]
-            x_t = population[j]  # Individu cible
+            #x_1 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[0]]]
+            #x_2 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[1]]]
+            #x_3 = [pb.Manoeuvre(man.t0,man.theta,man.angle) for man in population[random_index[2]]]
+            x_1 = [elt.manoeuvre for elt in population[random_index[0]]]
+            x_2 = [elt.manoeuvre for elt in population[random_index[1]]]
+            x_3 = [elt.manoeuvre for elt in population[random_index[2]]]
+            x_t = [elt.manoeuvre for elt in population[j]]
 
             # Définition du vecteur x_diff = x_3 - x_2
             x_diff = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)] # Soustrait les composantes
@@ -90,13 +92,14 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             # On compare notre nouvel individu avec l'individu actuel
             #score_trial = cost_func(v_trial)
             #score_target = cost_func(x_t)
-            flights_trial = [pb.Flight(F.speed2,F.pointDepart,F.angle0,v_trial[i]) for i, F in enumerate(Flights)]
-            flights_target = [pb.Flight(F.speed2, F.pointDepart, F.angle0, x_t[i]) for i, F in enumerate(Flights)]
-            score_trial = cost_func(flights_trial,v_trial)
-            score_target = cost_func(flights_target,x_t) #D'une génération à l'autre il faut penser que le score gagnant sera là en target à la prochaine géné
+            flights_trial = [pb.Flight(F.speed2,F.pointDepart,F.angle0,v_trial[i]) for i, F in enumerate(population[j])]
+
+            score_trial = cost_func(flights_trial)
+            score_target = score[j]
             if score_trial > score_target:
-                population[j] = v_trial
+                population[j] = flights_trial
                 gen_scores.append(score_trial)
+                score[j] = score_trial
                 print('Trial  >', score_trial, v_trial)
 
             else:
