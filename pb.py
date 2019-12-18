@@ -122,7 +122,7 @@ def init(Flights):
     liste_Flights.append(Flights)
 
     print(Flights)
-    premierConflits = updateConflits(Flights) # Liste des conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
+    #premierConflits = updateConflits(Flights) # Liste des conflits pour chaque avion ensuite utilisés pour crée x0 qui est le vecteur avec les manouvres vides
 
     for k in range(1,N_pop):
         vols = []
@@ -255,6 +255,7 @@ def conflit2a2(f1, f2):
         print(racines)
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
+        print(v1[0] - v2[0])
         if abs(racines[0].imag)<10**(-5): #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
             try:
@@ -263,6 +264,8 @@ def conflit2a2(f1, f2):
                 tiplus1 = T
             tmax= max(t[0], min(tfin, tiplus1))
             tmin= max(t[0],min(tdeb,tiplus1))
+            print(tmax,tmin)
+            print(t[0],ti1,ti2)
 
 
             if f2 not in f1.dConflits.keys():
