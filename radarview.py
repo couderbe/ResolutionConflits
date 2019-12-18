@@ -10,7 +10,7 @@ WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
 TRAJECTORY_WIDTH = 100
 PLANE_CIRCLE_SIZE = 500
-CONFLICT_CIRCLE_SIZE = pb.d
+CONFLICT_CIRCLE_SIZE = pb.d/2
 
 N_POINT_TRAJECTORY = pb.T
 

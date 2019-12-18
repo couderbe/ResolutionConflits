@@ -1,4 +1,6 @@
 import random
+import time
+
 import pb
 import copy
 F = 0.7 # à voir
@@ -20,7 +22,7 @@ def ensure_bounds(vec):
 
     for manoeuver in vec :
 
-            manoeuver.t0 = sorted ([ 0, manoeuver.t0, pb.T])[1]
+            manoeuver.t0 = sorted([ 0, manoeuver.t0, pb.T])[1]
             manoeuver.theta = sorted([0,manoeuver.theta, 1])[1]
             manoeuver.angle = sorted ([- pb.alphaMax, manoeuver.angle, pb.alphaMax])[1]
             t1 = (pb.T - manoeuver.t0) * manoeuver.theta
@@ -95,6 +97,7 @@ def differential_evolution(Flights,cost_func, N_pop, F, CR, maxiter):
             flights_trial = [pb.Flight(F.speed2,F.pointDepart,F.angle0,v_trial[i]) for i, F in enumerate(population[j])]
 
             score_trial = cost_func(flights_trial)
+
             score_target = score[j]
             if score_trial > score_target:
                 population[j] = flights_trial
