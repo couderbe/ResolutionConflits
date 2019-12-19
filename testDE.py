@@ -1,4 +1,17 @@
 import random
+import numpy as np
+
+def func1(x):
+    # Sphere function, use any bounds, f(0,...,0)=0
+    return sum([np.linalg.norm(x[i]) for i in range(len(x))])
+
+def func2(x):
+    # Beale's function, use bounds=[(-4.5, 4.5),(-4.5, 4.5)], f(3,0.5)=0.
+    term1 = (1.500 - x[0] + x[0]*x[1])**2
+    term2 = (2.250 - x[0] + x[0]*x[1]**2)**2
+    term3 = (2.625 - x[0] + x[0]*x[1]**3)**2
+    return term1 + term2 + term3
+
 
 
 def initPop(bounds, popsize ):
@@ -15,8 +28,8 @@ def ensure_bounds(vec, bounds):
     vec_new = []
     # cycle through each variable in vector
     for elt in (vec):
-        elt_new=(0) *len(elt)
-        for i in len(elt);
+        elt_new= np.zeros(len(elt))
+        for i in range(len(elt)):
         # variable exceedes the minimum boundary
             if elt[i] < bounds[i][0]:
                 elt_new[i]=bounds[i][0]
@@ -32,7 +45,7 @@ def ensure_bounds(vec, bounds):
     return vec_new
 
 
-def algoDE(bounds, popsize, mutate, maxiter, popInit):
+def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
     # --- INITIALISATION ----------------+
     population = popInit
 
@@ -40,41 +53,72 @@ def algoDE(bounds, popsize, mutate, maxiter, popInit):
 
     # cycle through each generation (step #2)
     for i in range(1, maxiter + 1):
+        print
+        'GENERATION:', i
 
-        # cycle through each individual in the population (step #3)
+        gen_scores = []  # score keeping
+
+        # cycle through each individual in the population
         for j in range(0, popsize):
-            # --- MUTATION ---------------+
 
-            # selection de 3 indices aléatoires excluant j
-            candidates = range(0, popsize)
-            candidates.remove(j)
-            random_index = random.sample(candidates, 3)
+            # --- MUTATION (step #3.A) ---------------------+
+
+            # select three random vector index positions [0, popsize), not including current vector (j)
+            canidates = list(range(0, popsize))
+            canidates.pop(j)
+            random_index = random.sample(canidates, 3)
 
             x_1 = population[random_index[0]]
             x_2 = population[random_index[1]]
             x_3 = population[random_index[2]]
             x_t = population[j]  # target individual
 
-            # différence de x3 et x2 (x_diff)
+            # subtract x3 from x2, and create a new vector (x_diff)
             x_diff = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)]
 
             # multiply x_diff by the mutation factor (F) and add to x_1
             v_donor = [x_1_i + mutate * x_diff_i for x_1_i, x_diff_i in zip(x_1, x_diff)]
             v_donor = ensure_bounds(v_donor, bounds)
 
-            # --- RECOMBINATION ----------------+
+            # --- RECOMBINATION (step #3.B) ----------------+
 
             v_trial = []
-            # cycle through each variable in our target vector
             for k in range(len(x_t)):
                 crossover = random.random()
-
-                # recombination occurs when crossover <= recombination rate
                 if crossover <= recombination:
                     v_trial.append(v_donor[k])
 
-                # recombination did not occur
                 else:
                     v_trial.append(x_t[k])
 
-    return best_individual
+            # --- GREEDY SELECTION (step #3.C) -------------+
+
+            score_trial = cost_func(v_trial)
+
+            score_target = cost_func(x_t)
+
+            if score_trial < score_target:
+                population[j] = v_trial
+                gen_scores.append(score_trial)
+                print
+                '   >', score_trial, v_trial
+
+            else:
+                print
+                '   >', score_target, x_t
+                gen_scores.append(score_target)
+
+        # --- SCORE KEEPING --------------------------------+
+
+        gen_avg = sum(gen_scores) / popsize  # current generation avg. fitness
+        gen_best = min(gen_scores)  # fitness of best individual
+        gen_sol = population[gen_scores.index(min(gen_scores))]  # solution of best individual
+
+        print
+        '      > GENERATION AVERAGE:', gen_avg
+        print
+        '      > GENERATION BEST:', gen_best
+        print
+        '         > BEST SOLUTION:', gen_sol, '\n'
+
+    return gen_sol
