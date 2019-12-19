@@ -1,5 +1,9 @@
-import testDE.py
+import testDE
 import numpy as np
+import radarview
+import pb
+from cmath import phase
+import time
 
 """ Paramètres Globaux """
 
@@ -90,10 +94,10 @@ class Flight():
 
 
 class Manoeuvre():
-    def __init__(self, t0, t1, angle):
-        self.t0 = t0
-        self.t1 = t1
-        self.angle = angle
+    def __init__(self, manArray):
+        self.t0 = manArray[0]
+        self.t1 = manArray[1]
+        self.angle = manArray[2]
 
 
     def __add__(self, other):
@@ -114,16 +118,18 @@ def creaPop(Flights):
     bounds_t0 = [BOUNDS[1]* N_avion]
     bounds_theta = [BOUNDS[2]* N_avion]
     bounds_alpha = [BOUNDS[0] * N_avion]
-    bounds = bounds_t0 + bounds_theta + bounds_alpha
-    popInit = testDE.initPop(bounds, 3* N_pop)
+#    bounds = bounds_t0 + bounds_theta + bounds_alpha
+    pop_alpha = testDE.initPop(bounds_alpha, N_pop)
+    pop_t0 = testDE.initPop(bounds_t0, N_pop)
+    pop_theta = testDE.initPop(bounds_theta, N_pop)
     ManoeuvreInit=[flight.manoeuvre for flight in Flights]
     liste_manoeuvres = []
     liste_manoeuvres.append(ManoeuvreInit)  # le premier individu de la population est la situation initiale.
     for k in range(1, N_pop):
         eltMan = []
         for l in range(N_avion):
-            eltMan.append(Manoeuvre(popInit[k][l], \
-                                  (popInit[k+N_avion][l])*(T-popInit[k][l])/2,popInit[k + 2*N_avion][l]))
+            manArray=np.array([pop_t0[k][l], (pop_theta[k][l])*(T-pop_t0[k][l])/2,pop_alpha[k][l]])
+            eltMan.append(Manoeuvre(manArray))
         liste_manoeuvres.append(eltMan)
     return liste_manoeuvres
 
@@ -273,3 +279,5 @@ def conflit2a2(f1, f2):
     f1.etat = 0
     f2.etat = 0
 
+Flights = [pb.Flight(250, QPoint(v[k]*30000*np.cos(m*k), v[k]*30000*np.sin(m*k)),np.pi+phase(complex(v[k]*30000*np.cos(m*k),v[k]*30000*np.sin(m*k))), pb.Manoeuvre(pb.T, 0, 0)) for k in range(pb.N_avion)]
+solution = de.algo_DE(Flights,pb.fitness,pb.N_pop, de.F, de.CR, 15)

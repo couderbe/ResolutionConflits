@@ -15,7 +15,7 @@ def ensure_bounds(vec, bounds):
     vec_new = []
     # cycle through each variable in vector
     for elt in (vec):
-        elt_new=(0*len(elt))
+        elt_new=(0) *len(elt)
         for i in len(elt);
         # variable exceedes the minimum boundary
             if elt[i] < bounds[i][0]:
