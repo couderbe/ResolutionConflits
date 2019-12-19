@@ -27,11 +27,20 @@ if __name__ == "__main__":
     solution = de.algoDE(pb.fitness,pb.BOUNDS,pb.N_pop, pb.F, pb.CR, ITERATIONS, population)
     print("Temps d'exécution: " + str((time.time()-t)/60))
     print("La meilleure solution est "+str(solution))
-    #print(pb.conflit2a2(solution[0],solution[1]))
+
+## Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
+
     for i,vol in enumerate(Flights):
-        vol.manoeuvre = pb.convertAtoM(solution[i])
+        manArray = np.array([0,0,0])
+        manArray[0] = solution[i][0]
+        manArray[1] = solution[i][1]*(T-solution[i][0])/2
+        manArray[2] = solution[i][2]
+        vol.manoeuvre = pb.convertAtoM(manArray)
+
     trajectories = [vol.pointTrajectory() for vol in Flights]
-    # Initialize Qt
+
+
+    # Initialisation Qt
     app = QtWidgets.QApplication([])
 
     # create the radar view and the time navigation interface

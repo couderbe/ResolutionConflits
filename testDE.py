@@ -5,15 +5,6 @@ def func1(x):
     # Sphere function, use any bounds, f(0,...,0)=0
     return sum([np.linalg.norm(x[i]) for i in range(len(x))])
 
-def func2(x):
-    # Beale's function, use bounds=[(-4.5, 4.5),(-4.5, 4.5)], f(3,0.5)=0.
-    term1 = (1.500 - x[0] + x[0]*x[1])**2
-    term2 = (2.250 - x[0] + x[0]*x[1]**2)**2
-    term3 = (2.625 - x[0] + x[0]*x[1]**3)**2
-    return term1 + term2 + term3
-
-
-
 def initPop(bounds, popsize ):
 # --- INITIALIZE A POPULATION (step #1) ----------------+
     population = []
@@ -53,8 +44,7 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
 
     # cycle through each generation (step #2)
     for i in range(1, maxiter + 1):
-        print
-        'GENERATION:', i
+        print('GENERATION: ', i)
 
         gen_scores = []  # score keeping
 
@@ -100,12 +90,10 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
             if score_trial < score_target:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
-                print
-                '   >', score_trial, v_trial
+                print('   >', score_trial, v_trial)
 
             else:
-                print
-                '   >', score_target, x_t
+                print('   >', score_target, x_t)
                 gen_scores.append(score_target)
 
         # --- SCORE KEEPING --------------------------------+
@@ -114,11 +102,8 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
         gen_best = min(gen_scores)  # fitness of best individual
         gen_sol = population[gen_scores.index(min(gen_scores))]  # solution of best individual
 
-        print
-        '      > GENERATION AVERAGE:', gen_avg
-        print
-        '      > GENERATION BEST:', gen_best
-        print
-        '         > BEST SOLUTION:', gen_sol, '\n'
+        print('> GENERATION AVERAGE:', gen_avg,'\n')
+        print('> GENERATION BEST:', gen_best,'\n')
+        print('> BEST SOLUTION:', gen_sol, '\n')
 
     return gen_sol

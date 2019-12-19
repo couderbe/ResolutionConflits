@@ -20,7 +20,7 @@ BOUNDS = [(0,T), (0,1), (-alphaMax, alphaMax)] # bornes de alpha, t0 et theta av
 CR = 0.1
 F = 0.7
 
-""" Constantes calculées une fois pour toutes"""
+""" Constantes (fonction des paramètres) calculées une fois pour toutes """
 alMc = alphaMax ** 2
 Tc = T ** 2
 
@@ -83,15 +83,6 @@ class Flight():
 
     def listeConflits(self):
         return self.dConflits.values()
-
-#    def premierConflit(self):
- #       conflits = self.listeConflits()
- #       if len(conflits) == 0:
- #           return (T,0)
- #       min_par_avion_dispo = []
- #       for k in conflits:
- #           min_par_avion_dispo.append(min(k,key= lambda x:x[0]))
- #       return min(min_par_avion_dispo, key=lambda x:x[0])
 
     def __repr__(self):
         return ("Vitesse:" + " " + str(self.speed) + " " + "Depart:" + str(self.pointDepart) + " Manoeuvre:" + str(self.manoeuvre) + " Angle0:" + str(self.angle0*180/np.pi))
@@ -162,8 +153,6 @@ def dureeConflit(liste_Conflits):
                     duree += j[1] - j[0]
     return duree /(2*T)
 
-
-
 def updateConflits():
     liste_Conflits = []
     for i in range(N_avion):
@@ -176,15 +165,14 @@ def updateConflits():
 
 
 
-# fonction fitness: # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
+# fonction fitness: # Prend en parametre Man une liste de manoeuvres (une pour chaque avion)
 def fitness(Man):
     for i,vol in enumerate(FLIGHTS):
         vol.manoeuvre = convertAtoM(Man[i])
-    liste_Conflits = updateConflits()  #Contient tout les conflits de chaque vol
+    liste_Conflits = updateConflits()  #Contient tous les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
-    #print(dureeConf)
-    #if dureeConf > 10**(-5):
-    if dureeConf != 0:
+    if dureeConf > 10**(-4):
+    #if dureeConf != 0:
         #print("fitness")
         return 1 / (2 + dureeConf)
     else:
@@ -192,49 +180,41 @@ def fitness(Man):
 
 
 def rotMatrix(theta):
-    return np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
-    # Attention peut-être il faut inverser les moins sur les sinus suivant l'orientation de la fenêtre Qt et de l'inversion de l'axe y
+    return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    # J'ai vérifié les signes, refait les calculs et inversé les signes, sinon c'était faux.
+    # Là on a bien la matrice d'une rotation directe
 
 # conflits 2 à 2 avec des vols
 def conflit2a2(f1, f2):
-
     ptdep1 = np.array([float(f1.pointDepart.x()),float(f1.pointDepart.y())])
     ptdep2 = np.array([float(f2.pointDepart.x()),float(f2.pointDepart.y())])
     v1 = f1.speed
     v2 = f2.speed
     t01 = f1.manoeuvre.t0
     alpha1 = f1.manoeuvre.angle
-    t11 = f1.manoeuvre.t1 #Pour avoir un temps à partir de theta
+    t11 = f1.manoeuvre.t1
     t02 = f2.manoeuvre.t0
     alpha2 = f2.manoeuvre.angle
     t12 = f2.manoeuvre.t1
-    # Les segments de trajectoire ne commencent pas au temps initial mais aux temps ti1,ti2
+    # Les segments de trajectoire ne commencent pas au temps initial 0 mais aux temps ti1,ti2
     ti1 = 0
     ti2 = 0
-    #print(f1)
-    #print(f2)
-
-
-    #dico_temps = {'t01': f1, 't01+t11': f1, 't01+2*t11': f1, 't02': f2, 't02+t12': f2, 't02+2*t12': f2}
-    #print(dico_temps.keys())
-    #temps = sorted([t01, t01+t11, t01+2*t11, t02, t02+t12, t02+2*t12])
-    #print(temps)
-
 
     # Il y en a 6 je pense qu'il en faut 7 je le rajoute juste avant pour quand les 2 sont à 0
-    temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],key=lambda x:x[0])
+    temps = sorted([(0,None), (t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
+                   key=lambda x:x[0])
 
     for (i,t) in enumerate(temps):
         if f1.etat == 1:
             ptdep1 += t01 * v1
             v1 = np.dot(rotMatrix(alpha1), v1)
-            ti1 = t01
+            ti1 += t01
         elif f1.etat == 2:
-            ptdep1 += (t11-ti1) * v1
+            ptdep1 += t11 * v1
             v1 = np.dot(rotMatrix(-2 * alpha1), v1)
             ti1 += t11
         elif f1.etat == 3:
-            ptdep1 += (t11 -ti1) * v1
+            ptdep1 += t11 * v1
             v1 = np.dot(rotMatrix(alpha1), v1)
             ti1 += t11
         if f2.etat == 1:
@@ -242,31 +222,37 @@ def conflit2a2(f1, f2):
             v2 = np.dot(rotMatrix(alpha2), v2)
             ti2 += t02
         elif f2.etat == 2:
-            ptdep2 += (t12-ti2) * v2
+            ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(-2 * alpha2), v2)
             ti2 += t12
         elif f2.etat == 3:
-            ptdep2 += (t12 -ti2)* v2
+            ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
             ti2 += t12
-        a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2  ## LE [0] est la coord x de la vitesse et [1] la coord y de la vitesse
-        #b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
-        b = 2 * ((ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) * (v1[1] - v2[1]))
-        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) ** 2 + (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) ** 2 - d ** 2
+
+        ## LE [0] est la coordonnée en x et [1] la coordonnée en y
+        a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
+
+        b = 2 * ((ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) * (v1[0] - v2[0]) + \
+                 (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) * (v1[1] - v2[1]))
+        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) ** 2 + \
+            (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) ** 2 - d ** 2
 
         coeff = [a, b, c]
         racines = np.roots(coeff)
+
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
-        if abs(racines[0].imag)<10**(-5): #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
-            # Pour eviter list index out of range dans le cas ou on est dans la dernière partie du trajet
+
+        if abs(racines[0].imag)<10**(-5):
+            #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
+            # Pour eviter list index out of range dans le cas où on est dans la dernière partie du trajet
             try:
                 tiplus1 = temps[i+1][0]
             except IndexError:
                 tiplus1 = T
             tmax= max(t[0], min(tfin, tiplus1))
-            tmin= max(t[0],min(tdeb,tiplus1))
-
+            tmin= max(t[0], min(tdeb, tiplus1))
 
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
@@ -279,6 +265,6 @@ def conflit2a2(f1, f2):
             temps[i+1][1].etat = (temps[i+1][1].etat + 1) % 4
         except IndexError:
             pass
-    # Pour que les etats soient revenus à 0 pour fois suivantes
+    # Pour que les etats soient revenus à 0 pour les fois suivantes
     f1.etat = 0
     f2.etat = 0
