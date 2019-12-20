@@ -1,14 +1,13 @@
 import testDE
 import numpy as np
 import radarview
-import pb
 from cmath import phase
 from PyQt5.QtCore import QPoint
 import time
 
 """ Paramètres Globaux """
 
-N_avion = 2 # Nombre d'avions
+N_avion = 3 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 
@@ -17,7 +16,7 @@ T = 240  # Temps total
 alphaMax = np.pi / 6
 N_pop=50
 BOUNDS = [(0,T), (0,1), (-alphaMax, alphaMax)] # bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2)
-CR = 0.1
+CR = 0.5
 F = 0.7
 
 """ Constantes (fonction des paramètres) calculées une fois pour toutes """
@@ -107,10 +106,12 @@ class Manoeuvre():
     def __repr__(self):
         return ("t0:" + str(self.t0) + " t1:" + str(self.t1) + " angle:" + str(self.angle))
     def convertMtoA(self):
-        return np.array([self.t0, self.t1, self.angle])
+        if T-self.t0 != 0:
+            return np.array([self.t0, (2*self.t1)/(T-self.t0), self.angle])
+        return np.array([self.t0, 0, self.angle])
 
 def convertAtoM(manoeuvre):
-    return Manoeuvre(manoeuvre[0],manoeuvre[1],manoeuvre[2])
+    return Manoeuvre(manoeuvre[0],manoeuvre[1]*((T-manoeuvre[0])/2),manoeuvre[2])
 
 def creaPop(Flights):
     global FLIGHTS
@@ -127,7 +128,7 @@ def creaPop(Flights):
     for k in range(1, N_pop):
         eltMan = []
         for l in range(N_avion):
-            manArray=np.array([pop_t0[k][l], (pop_theta[k][l])*(T-pop_t0[k][l])/2,pop_alpha[k][l]])
+            manArray=np.array([pop_t0[k][l], pop_theta[k][l],pop_alpha[k][l]])
             eltMan.append(manArray)
         liste_manoeuvres.append(eltMan)
     return liste_manoeuvres
@@ -150,6 +151,7 @@ def dureeConflit(liste_Conflits):
         if len(val) != 0:
             for i in val:
                 for j in i:
+                    print(val,i,j)
                     duree += j[1] - j[0]
     return duree /(2*T)
 
@@ -174,9 +176,9 @@ def fitness(Man):
     if dureeConf > 10**(-4):
     #if dureeConf != 0:
         #print("fitness")
-        return 1 / (2 + dureeConf)
+        return  1.0/(2.0 + dureeConf)
     else:
-        return 1 / 2 + 1 / (2+cout())
+        return 0.5 + 1.0/(2+cout())
 
 
 def rotMatrix(theta):
@@ -233,9 +235,9 @@ def conflit2a2(f1, f2):
         ## LE [0] est la coordonnée en x et [1] la coordonnée en y
         a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
 
-        b = 2 * ((ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) * (v1[0] - v2[0]) + \
+        b = 2 * ((ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) * (v1[0] - v2[0]) +
                  (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) * (v1[1] - v2[1]))
-        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) ** 2 + \
+        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) ** 2 +\
             (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) ** 2 - d ** 2
 
         coeff = [a, b, c]

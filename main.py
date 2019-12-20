@@ -11,7 +11,7 @@ import random
 
 Flights = []
 m = 2*3.1416/pb.N_avion
-ITERATIONS = 150
+ITERATIONS = 50
 
 
 if __name__ == "__main__":
@@ -33,10 +33,10 @@ if __name__ == "__main__":
     for i,vol in enumerate(Flights):
         manArray = np.array([0,0,0])
         manArray[0] = solution[i][0]
-        manArray[1] = solution[i][1]*(T-solution[i][0])/2
+        manArray[1] = solution[i][1]
         manArray[2] = solution[i][2]
-        vol.manoeuvre = pb.convertAtoM(manArray)
-
+        vol.manoeuvre = pb.convertAtoM(solution[i])
+    print(Flights)
     trajectories = [vol.pointTrajectory() for vol in Flights]
 
 

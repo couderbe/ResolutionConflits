@@ -80,14 +80,13 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
 
                 else:
                     v_trial.append(x_t[k])
-
             # --- GREEDY SELECTION (step #3.C) -------------+
 
             score_trial = cost_func(v_trial)
 
             score_target = cost_func(x_t)
 
-            if score_trial < score_target:
+            if score_trial > score_target:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
                 print('   >', score_trial, v_trial)
@@ -99,8 +98,8 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
         # --- SCORE KEEPING --------------------------------+
 
         gen_avg = sum(gen_scores) / popsize  # current generation avg. fitness
-        gen_best = min(gen_scores)  # fitness of best individual
-        gen_sol = population[gen_scores.index(min(gen_scores))]  # solution of best individual
+        gen_best = max(gen_scores)  # fitness of best individual
+        gen_sol = population[gen_scores.index(max(gen_scores))]  # solution of best individual
 
         print('> GENERATION AVERAGE:', gen_avg,'\n')
         print('> GENERATION BEST:', gen_best,'\n')
