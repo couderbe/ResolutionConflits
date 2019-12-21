@@ -10,7 +10,7 @@ WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
 TRAJECTORY_WIDTH = 100
 PLANE_CIRCLE_SIZE = 500
-CONFLICT_CIRCLE_SIZE = pb.d/2
+CONFLICT_CIRCLE_SIZE = pb.d
 
 N_POINT_TRAJECTORY = pb.T
 
@@ -66,7 +66,7 @@ class RadarView(QtWidgets.QWidget):
         # invert y axis for the view
         self.view.scale(1, -1)
 
-        # add the airport elements to the graphic scene and then fit it in the view
+        # add the trajectory elements to the graphic scene and then fit it in the view
         self.add_trajectory_items(self.flights)
         self.fit_scene_in_view()
 

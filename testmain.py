@@ -7,7 +7,7 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 3 # Nombre d'avions
+N_avion = 4 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 
@@ -43,10 +43,10 @@ class Flight():
         v = np.linalg.norm(self.speed)
         p0 = self.pointDepart
         p1 = p0 + QPoint(v * self.manoeuvre.t0 * np.cos(self.angle0),
-                         v* self.manoeuvre.t0 * np.sin(self.angle0))
+                         v * self.manoeuvre.t0 * np.sin(self.angle0))
         p2 = p1 + QPoint(v * self.manoeuvre.t1 * np.cos(
             self.manoeuvre.angle + self.angle0),
-                         v* self.manoeuvre.t1 * np.sin(
+                         v * self.manoeuvre.t1 * np.sin(
                              self.manoeuvre.angle + self.angle0))
         p3 = p2 + QPoint(v * self.manoeuvre.t1* np.cos(
             -self.manoeuvre.angle + self.angle0),
@@ -71,7 +71,7 @@ class Flight():
             elif k*intervalleTemps <= (self.manoeuvre.t0 + self.manoeuvre.t1):
                 resultat.append(resultat[k - 1] + QPoint(intervalleTemps * v * np.cos(self.angle0 + self.manoeuvre.angle),
                                                          intervalleTemps * v* np.sin(self.angle0 + self.manoeuvre.angle)))
-            elif k * intervalleTemps <= (self.manoeuvre.t0 + self.manoeuvre.t1):
+            elif k * intervalleTemps <= (self.manoeuvre.t0 + 2*self.manoeuvre.t1):
                 resultat.append(resultat[k - 1] + QPoint(intervalleTemps * v* np.cos(self.angle0 - self.manoeuvre.angle),
                                                          intervalleTemps * v * np.sin(self.angle0 - self.manoeuvre.angle)))
             else:
@@ -151,7 +151,6 @@ def dureeConflit(liste_Conflits):
         if len(val) != 0:
             for i in val:
                 for j in i:
-                    print(val,i,j)
                     duree += j[1] - j[0]
     return duree /(2*T)
 
@@ -173,11 +172,12 @@ def fitness(Man):
         vol.manoeuvre = convertAtoM(Man[i])
     liste_Conflits = updateConflits()  #Contient tous les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
-    if dureeConf > 10**(-4):
+    if dureeConf > 10**(-10):
     #if dureeConf != 0:
         #print("fitness")
         return  1.0/(2.0 + dureeConf)
     else:
+        #print(liste_Conflits)
         return 0.5 + 1.0/(2+cout())
 
 
@@ -198,6 +198,8 @@ def conflit2a2(f1, f2):
     t02 = f2.manoeuvre.t0
     alpha2 = f2.manoeuvre.angle
     t12 = f2.manoeuvre.t1
+    compteur1 = 0
+    compteur2 = 0
     # Les segments de trajectoire ne commencent pas au temps initial 0 mais aux temps ti1,ti2
     ti1 = 0
     ti2 = 0
@@ -207,27 +209,31 @@ def conflit2a2(f1, f2):
                    key=lambda x:x[0])
 
     for (i,t) in enumerate(temps):
-        if f1.etat == 1:
+        if f1.etat == 1 and compteur1 == 0:
             ptdep1 += t01 * v1
             v1 = np.dot(rotMatrix(alpha1), v1)
             ti1 += t01
-        elif f1.etat == 2:
+            compteur1 += 1
+        elif f1.etat == 2 and compteur1 == 1:
             ptdep1 += t11 * v1
             v1 = np.dot(rotMatrix(-2 * alpha1), v1)
             ti1 += t11
-        elif f1.etat == 3:
+            compteur1 += 1
+        elif f1.etat == 3 and compteur1 == 2:
             ptdep1 += t11 * v1
             v1 = np.dot(rotMatrix(alpha1), v1)
             ti1 += t11
-        if f2.etat == 1:
+        if f2.etat == 1 and compteur2 == 0:
             ptdep2 += t02 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
             ti2 += t02
-        elif f2.etat == 2:
+            compteur2 += 1
+        elif f2.etat == 2 and compteur2 == 1:
             ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(-2 * alpha2), v2)
             ti2 += t12
-        elif f2.etat == 3:
+            compteur2 += 1
+        elif f2.etat == 3 and compteur2 == 2:
             ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
             ti2 += t12
