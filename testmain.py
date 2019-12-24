@@ -7,7 +7,7 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 4 # Nombre d'avions
+N_avion = 3 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 
@@ -171,13 +171,14 @@ def fitness(Man):
     for i,vol in enumerate(FLIGHTS):
         vol.manoeuvre = convertAtoM(Man[i])
     liste_Conflits = updateConflits()  #Contient tous les conflits de chaque vol
+    print(liste_Conflits)
     dureeConf = dureeConflit(liste_Conflits)
     if dureeConf > 10**(-10):
     #if dureeConf != 0:
         #print("fitness")
         return  1.0/(2.0 + dureeConf)
     else:
-        #print(liste_Conflits)
+
         return 0.5 + 1.0/(2+cout())
 
 
@@ -198,16 +199,16 @@ def conflit2a2(f1, f2):
     t02 = f2.manoeuvre.t0
     alpha2 = f2.manoeuvre.angle
     t12 = f2.manoeuvre.t1
+    # Pour éviter que les aviosn rentrent plusieurs fois dans un if d'etat
     compteur1 = 0
     compteur2 = 0
     # Les segments de trajectoire ne commencent pas au temps initial 0 mais aux temps ti1,ti2
     ti1 = 0
     ti2 = 0
 
-    # Il y en a 6 je pense qu'il en faut 7 je le rajoute juste avant pour quand les 2 sont à 0
     temps = sorted([(0,None), (t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
                    key=lambda x:x[0])
-
+    print(f1,f2)
     for (i,t) in enumerate(temps):
         if f1.etat == 1 and compteur1 == 0:
             ptdep1 += t01 * v1
@@ -223,6 +224,7 @@ def conflit2a2(f1, f2):
             ptdep1 += t11 * v1
             v1 = np.dot(rotMatrix(alpha1), v1)
             ti1 += t11
+            compteur1 += 1
         if f2.etat == 1 and compteur2 == 0:
             ptdep2 += t02 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
@@ -237,22 +239,24 @@ def conflit2a2(f1, f2):
             ptdep2 += t12 * v2
             v2 = np.dot(rotMatrix(alpha2), v2)
             ti2 += t12
+            compteur2 += 1
 
-        ## LE [0] est la coordonnée en x et [1] la coordonnée en y
+        # LE [0] est la coordonnée en x et [1] la coordonnée en y
         a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
 
         b = 2 * ((ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) * (v1[0] - v2[0]) +
                  (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) * (v1[1] - v2[1]))
-        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) ** 2 +\
-            (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) ** 2 - d ** 2
+
+        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1)**2 + (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1)**2 - d**2
 
         coeff = [a, b, c]
+
         racines = np.roots(coeff)
 
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
-
-        if abs(racines[0].imag)<10**(-5):
+        #print("debfin :" + str((tdeb,tfin)))
+        if abs(racines[0].imag)<10**(-8):
             #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
             # Pour eviter list index out of range dans le cas où on est dans la dernière partie du trajet
             try:
