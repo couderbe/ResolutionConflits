@@ -89,10 +89,10 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
             if score_trial > score_target:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
-                print('   >', score_trial, v_trial)
+                #print('   >', score_trial, v_trial)
 
             else:
-                print('   >', score_target, x_t)
+                #print('   >', score_target, x_t)
                 gen_scores.append(score_target)
 
         # --- SCORE KEEPING --------------------------------+
@@ -101,8 +101,8 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
         gen_best = max(gen_scores)  # fitness of best individual
         gen_sol = population[gen_scores.index(max(gen_scores))]  # solution of best individual
 
-        print('> GENERATION AVERAGE:', gen_avg,'\n')
+        #print('> GENERATION AVERAGE:', gen_avg,'\n')
         print('> GENERATION BEST:', gen_best,'\n')
-        print('> BEST SOLUTION:', gen_sol, '\n')
+        #print('> BEST SOLUTION:', gen_sol, '\n')
 
     return gen_sol

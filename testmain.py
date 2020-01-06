@@ -7,7 +7,7 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 4 # Nombre d'avions
+N_avion = 20 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 
@@ -171,7 +171,7 @@ def fitness(Man):
     for i,vol in enumerate(FLIGHTS):
         vol.manoeuvre = convertAtoM(Man[i])
     liste_Conflits = updateConflits()  #Contient tous les conflits de chaque vol
-    print(liste_Conflits)
+    #print(liste_Conflits)
     dureeConf = dureeConflit(liste_Conflits)
     if dureeConf > 10**(-10):
     #if dureeConf != 0:
@@ -183,7 +183,7 @@ def fitness(Man):
 
 
 def rotMatrix(theta):
-    return np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+    return np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
     # J'ai vérifié les signes, refait les calculs et inversé les signes, sinon c'était faux.
     # Là on a bien la matrice d'une rotation directe
 
@@ -208,7 +208,6 @@ def conflit2a2(f1, f2):
 
     temps = sorted([(0,None), (t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
                    key=lambda x:x[0])
-    print(f1,f2)
     for (i,t) in enumerate(temps):
         if f1.etat == 1 and compteur1 == 0:
             ptdep1 += t01 * v1
@@ -252,7 +251,7 @@ def conflit2a2(f1, f2):
         coeff = [a, b, c]
 
         racines = np.roots(coeff)
-
+        #print("racines: " + str(racines) + " coeff: "+ str(coeff))
         tdeb = min(racines[0].real, racines[1].real)
         tfin = max(racines[0].real, racines[1].real)
         #print("debfin :" + str((tdeb,tfin)))
