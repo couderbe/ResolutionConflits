@@ -11,7 +11,7 @@ import random
 
 Flights = []
 m = 2*3.1416/pb.N_avion
-ITERATIONS = 250
+ITERATIONS = 100
 RAYON_CERCLE = 30000
 
 if __name__ == "__main__":

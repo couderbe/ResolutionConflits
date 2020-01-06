@@ -7,7 +7,7 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 20 # Nombre d'avions
+N_avion = 10 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 

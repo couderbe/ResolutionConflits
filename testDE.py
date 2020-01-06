@@ -41,7 +41,7 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
     population = popInit
 
     # --- RESOLUTION --------------------+
-
+    popScore = [cost_func(population[i]) for i in range(popsize)]
     # cycle through each generation (step #2)
     for i in range(1, maxiter + 1):
         print('GENERATION: ', i)
@@ -84,16 +84,17 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
 
             score_trial = cost_func(v_trial)
 
-            score_target = cost_func(x_t)
+            #score_target = cost_func(x_t)
 
-            if score_trial > score_target:
+            if score_trial > popScore[j]:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
+                popScore[j] = score_trial
                 #print('   >', score_trial, v_trial)
 
             else:
                 #print('   >', score_target, x_t)
-                gen_scores.append(score_target)
+                gen_scores.append(popScore[j])
 
         # --- SCORE KEEPING --------------------------------+
 
