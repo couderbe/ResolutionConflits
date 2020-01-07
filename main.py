@@ -45,7 +45,10 @@ if __name__ == "__main__":
         date = time.ctime(time.time())
         dateTest = "_".join(date.split())
         filename = FICHIER + dateTest + '.txt'
-        IO.write(Flights, filename)
+        try:
+            IO.write(Flights, filename)
+        except Exception:
+            print("Probleme d'enregistrement du fichier")
     #trajectories = [vol.pointTrajectory() for vol in Flights]
 
     else:
@@ -68,5 +71,4 @@ if __name__ == "__main__":
 
     # enter the main loop
     app.exec_()
-
 
