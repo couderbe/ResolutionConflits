@@ -7,7 +7,7 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 4 # Nombre d'avions
+N_avion = 2 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 
@@ -16,7 +16,7 @@ T = 240  # Temps total
 alphaMax = np.pi / 6
 N_pop=50
 BOUNDS = [(0,T), (0,1), (-alphaMax, alphaMax)] # bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2)
-CR = 0.5
+CR = 0.1
 F = 0.7
 
 """ Constantes (fonction des paramètres) calculées une fois pour toutes """
@@ -29,7 +29,7 @@ class Flight():
         self.pointDepart = pointDepart
         self.angle0 = angle0
         self.manoeuvre = manoeuvre
-        self.speed = np.dot(np.array([speed,0]),rotMatrix(self.angle0)) #Un array numpy
+        self.speed = np.dot(rotMatrix(self.angle0),np.array([speed,0])) #Un array numpy
         self.dConflits = {}#dictionnaire des conflits, clés: les avions et valeurs: listes des temps de début et fin de conflits pour tous les moments où les avions sont en conflit
         self.etat = 0
 
@@ -183,7 +183,8 @@ def fitness(Man):
 
 
 def rotMatrix(theta):
-    return np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]])
+    return np.array([[np.cos(theta), -np.sin(theta)],
+                     [np.sin(theta), np.cos(theta)]])
     # J'ai vérifié les signes, refait les calculs et inversé les signes, sinon c'était faux.
     # Là on a bien la matrice d'une rotation directe
 
@@ -201,69 +202,76 @@ def conflit2a2(f1, f2):
     t12 = f2.manoeuvre.t1
     # Pour éviter que les aviosn rentrent plusieurs fois dans un if d'etat
     compteur1 = 0
+    angle1 = [alpha1,-2*alpha1,alpha1]
     compteur2 = 0
-    # Les segments de trajectoire ne commencent pas au temps initial 0 mais aux temps ti1,ti2
-    ti1 = 0
-    ti2 = 0
-
-    temps = sorted([(0,None), (t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
+    angle2 = [alpha2, -2 * alpha2, alpha2]
+    temps = sorted([(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
                    key=lambda x:x[0])
+    tOld = 0
+    ##
+    a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
+
+    b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
+
+    c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
+
+    racines = second_degre(a, b, c)
+    tdeb = min(racines)
+    tfin = max(racines)
+
+    tmax = max(0, min(tfin,T))
+    tmin = max(0, min(tdeb,T))
+
+    if f2 not in f1.dConflits.keys():
+        f1.dConflits[f2] = []
+        f2.dConflits[f1] = []
+
+    if (tmin, tmax) not in f1.dConflits[f2]:
+        f1.dConflits[f2].append((tmin, tmax))
+        f2.dConflits[f1].append((tmin, tmax))
+    ##
+    #print("debut")
     for (i,t) in enumerate(temps):
-        if f1.etat == 1 and compteur1 == 0:
-            ptdep1 += t01 * v1
-            v1 = np.dot(rotMatrix(alpha1), v1)
-            ti1 += t01
-            compteur1 += 1
-        elif f1.etat == 2 and compteur1 == 1:
-            ptdep1 += t11 * v1
-            v1 = np.dot(rotMatrix(-2 * alpha1), v1)
-            ti1 += t11
-            compteur1 += 1
-        elif f1.etat == 3 and compteur1 == 2:
-            ptdep1 += t11 * v1
-            v1 = np.dot(rotMatrix(alpha1), v1)
-            ti1 += t11
-            compteur1 += 1
-        if f2.etat == 1 and compteur2 == 0:
-            ptdep2 += t02 * v2
-            v2 = np.dot(rotMatrix(alpha2), v2)
-            ti2 += t02
-            compteur2 += 1
-        elif f2.etat == 2 and compteur2 == 1:
-            ptdep2 += t12 * v2
-            v2 = np.dot(rotMatrix(-2 * alpha2), v2)
-            ti2 += t12
-            compteur2 += 1
-        elif f2.etat == 3 and compteur2 == 2:
-            ptdep2 += t12 * v2
-            v2 = np.dot(rotMatrix(alpha2), v2)
-            ti2 += t12
-            compteur2 += 1
+
+        tCurrent = t[0]
+        dt = tCurrent - tOld
+        #print(dt)
+        ptdep2 += dt * v2
+        ptdep1 += dt * v1
+        #print(ptdep1,ptdep2)
+        flightChanging = t[1]
+        if flightChanging != None:
+            flightChanging.etat += 1
+            if flightChanging == f1:
+                v1 = np.dot(rotMatrix(angle1[compteur1]),v1)
+                compteur1 += 1
+            else:
+                v2 = np.dot(rotMatrix(angle2[compteur2]), v2)
+                compteur2 += 1
+
+
 
         # LE [0] est la coordonnée en x et [1] la coordonnée en y
         a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
 
-        b = 2 * ((ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1) * (v1[0] - v2[0]) +
-                 (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1) * (v1[1] - v2[1]))
+        b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) +
+                 (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
 
-        c = (ptdep1[0] - ptdep2[0] + v2[0]*ti2 - v1[0]*ti1)**2 + (ptdep1[1] - ptdep2[1] + v2[1]*ti2 - v1[1]*ti1)**2 - d**2
+        c = (ptdep1[0] - ptdep2[0])**2 + (ptdep1[1] - ptdep2[1])**2 - d**2
 
-        coeff = [a, b, c]
+        racines = second_degre(a,b,c)
+        if racines != None:
+            tdeb = min(racines)
+            tfin = max(racines)
 
-        racines = np.roots(coeff)
-        #print("racines: " + str(racines) + " coeff: "+ str(coeff))
-        tdeb = min(racines[0].real, racines[1].real)
-        tfin = max(racines[0].real, racines[1].real)
-        #print("debfin :" + str((tdeb,tfin)))
-        if abs(racines[0].imag)<10**(-8):
-            #On ne garde que les solutions réelles: si imaginaires, les avions ne sont pas en conflit
-            # Pour eviter list index out of range dans le cas où on est dans la dernière partie du trajet
-            try:
+            if i < len(temps)-1:
                 tiplus1 = temps[i+1][0]
-            except IndexError:
+            else:
                 tiplus1 = T
-            tmax= max(t[0], min(tfin, tiplus1))
-            tmin= max(t[0], min(tdeb, tiplus1))
+
+            tmax= max(tCurrent, min(tfin, tiplus1))
+            tmin= max(tCurrent, min(tdeb, tiplus1))
+
 
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
@@ -272,10 +280,16 @@ def conflit2a2(f1, f2):
             if (tmin, tmax) not in f1.dConflits[f2]:
                 f1.dConflits[f2].append((tmin, tmax))
                 f2.dConflits[f1].append((tmin, tmax))
-        try:
-            temps[i+1][1].etat = (temps[i+1][1].etat + 1) % 4
-        except IndexError:
-            pass
+
+        tOld = tCurrent
     # Pour que les etats soient revenus à 0 pour les fois suivantes
     f1.etat = 0
     f2.etat = 0
+
+def second_degre (a,b,c) :
+    delta = b**2 - 4*a*c
+    if delta > 0 :
+        racine1 = (-b - np.sqrt(delta))/(2*a)
+        racine2 = (-b + np.sqrt(delta))/(2*a)
+        return [racine1, racine2]
+    return None
