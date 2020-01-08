@@ -9,12 +9,14 @@ import testDE as de
 import time
 import IO
 import sys
+import creationSituation as cS
 
 Flights = []
 m = 2*3.1416/pb.N_avion
 ITERATIONS = 15
 RAYON_CERCLE = 30000
 FICHIER = "Results/"
+
 
 
 if __name__ == "__main__":
@@ -26,7 +28,7 @@ if __name__ == "__main__":
     #trajectories = [vol1.pointTrajectory()]
         t = time.time()
         v = [1 for k in range(pb.N_avion)] # avoir la vitesse des avions (différentes)
-        Flights = [pb.Flight(250, QPoint(v[k]*RAYON_CERCLE*np.cos(m*k), v[k]*RAYON_CERCLE*np.sin(m*k)),np.pi+phase(complex(v[k]*RAYON_CERCLE*np.cos(m*k),v[k]*RAYON_CERCLE*np.sin(m*k))), pb.Manoeuvre(pb.T, 0, 0)) for k in range(pb.N_avion)]
+        Flights = cS.cercle(m,RAYON_CERCLE,v)
         population = pb.creaPop(Flights)
         solution = de.algoDE(pb.fitness,pb.BOUNDS,pb.N_pop, pb.F, pb.CR, ITERATIONS, population)
         print("Temps d'exécution: " + str((time.time()-t)/60))
