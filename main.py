@@ -43,7 +43,7 @@ if __name__ == "__main__":
             print(vol.manoeuvre)
         print(Flights)
         date = time.ctime(time.time())
-        dateTest = "_".join(date.split())
+        dateTest = "_".join(date.split()).replace(':','_')
         filename = FICHIER + dateTest + '.txt'
         try:
             IO.write(Flights, filename)
