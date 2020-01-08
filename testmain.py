@@ -7,16 +7,16 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 2 # Nombre d'avions
+N_avion = 10 # Nombre d'avions
 d = 5000 #5 #Distance de séparation
 FLIGHTS = []
 
 """ Paramètres pour DE """
 T = 240  # Temps total
 alphaMax = np.pi / 6
-N_pop=50
+N_pop=40
 BOUNDS = [(0,T), (0,1), (-alphaMax, alphaMax)] # bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2)
-CR = 0.1
+CR = 0.05
 F = 0.7
 
 """ Constantes (fonction des paramètres) calculées une fois pour toutes """
@@ -173,9 +173,10 @@ def fitness(Man):
     liste_Conflits = updateConflits()  #Contient tous les conflits de chaque vol
     #print(liste_Conflits)
     dureeConf = dureeConflit(liste_Conflits)
+    #print("fitness")
     if dureeConf > 10**(-10):
     #if dureeConf != 0:
-        #print("fitness")
+
         return  1.0/(2.0 + dureeConf)
     else:
 
@@ -205,10 +206,11 @@ def conflit2a2(f1, f2):
     angle1 = [alpha1,-2*alpha1,alpha1]
     compteur2 = 0
     angle2 = [alpha2, -2 * alpha2, alpha2]
-    temps = sorted([(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
+    temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
                    key=lambda x:x[0])
+    #print("temps: " + str(temps))
     tOld = 0
-    ##
+    '''
     a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
 
     b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
@@ -229,24 +231,29 @@ def conflit2a2(f1, f2):
     if (tmin, tmax) not in f1.dConflits[f2]:
         f1.dConflits[f2].append((tmin, tmax))
         f2.dConflits[f1].append((tmin, tmax))
-    ##
-    #print("debut")
+    ##'''
+    #print(f1,f2)
     for (i,t) in enumerate(temps):
-
+        #print(i,t)
         tCurrent = t[0]
         dt = tCurrent - tOld
+        #print(dt)
         #print(dt)
         ptdep2 += dt * v2
         ptdep1 += dt * v1
         #print(ptdep1,ptdep2)
+        #print(ptdep1,ptdep2)
         flightChanging = t[1]
         if flightChanging != None:
             flightChanging.etat += 1
+            #print(flightChanging)
             if flightChanging == f1:
                 v1 = np.dot(rotMatrix(angle1[compteur1]),v1)
+                #print("v1"+str(v1))
                 compteur1 += 1
             else:
                 v2 = np.dot(rotMatrix(angle2[compteur2]), v2)
+                #print("v2" + str(v2))
                 compteur2 += 1
 
 
@@ -261,9 +268,9 @@ def conflit2a2(f1, f2):
 
         racines = second_degre(a,b,c)
         if racines != None:
-            tdeb = min(racines)
-            tfin = max(racines)
-
+            tdeb = min(racines) + t[0]
+            tfin = max(racines) + t[0]
+            #print(tdeb,tfin)
             if i < len(temps)-1:
                 tiplus1 = temps[i+1][0]
             else:
@@ -271,7 +278,7 @@ def conflit2a2(f1, f2):
 
             tmax= max(tCurrent, min(tfin, tiplus1))
             tmin= max(tCurrent, min(tdeb, tiplus1))
-
+            #print(tmin,tmax)
 
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []

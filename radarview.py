@@ -1,5 +1,5 @@
 import math
-import pb
+import testmain as pb
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QPoint

@@ -13,7 +13,7 @@ import creationSituation as cS
 
 Flights = []
 m = 2*3.1416/pb.N_avion
-ITERATIONS = 15
+ITERATIONS = 500
 RAYON_CERCLE = 30000
 FICHIER = "Results/"
 
