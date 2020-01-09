@@ -11,6 +11,8 @@ import IO
 import sys
 import creationSituation as cS
 
+
+###----------CONSTANTES--------###
 Flights = []
 m = 2*3.1416/pb.N_avion
 ITERATIONS = 500
@@ -37,10 +39,6 @@ if __name__ == "__main__":
 ## Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
 
         for i,vol in enumerate(Flights):
-        # manArray = np.array([0,0,0])
-        # manArray[0] = solution[i][0]
-        # manArray[1] = solution[i][1]
-        # manArray[2] = solution[i][2]
             vol.manoeuvre = pb.convertAtoM(solution[i])
             print(vol.manoeuvre)
         print(Flights)

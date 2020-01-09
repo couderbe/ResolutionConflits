@@ -7,17 +7,24 @@ import time
 
 """ Paramètres Globaux """
 
-N_avion = 10 # Nombre d'avions
-d = 5000 #5 #Distance de séparation
+N_avion = 10        ### Nombre d'avions
+d = 5000            ### Distance de séparation (en millièmes de NM)!!!!
+#d_SI = A calculer absolument!!!!
 FLIGHTS = []
+T = 240             ### Temps total en ??? Il me semble qu'on avait pris 4 minutes soit 240 secondes, ou bien 40 minutes, soit 240 dA secondes??
+#T_SI = A calculer absolument!!!!
+#Si nos d_SI et T_SI donnent un truc trop petit, on pourra "rescaler" la fenetre de QT, par ex en utilisant (10,-10) ou (0.1, -0.1) à la place de (1,-1)
 
-""" Paramètres pour DE """
-T = 240  # Temps total
-alphaMax = np.pi / 6
-N_pop=40
-BOUNDS = [(0,T), (0,1), (-alphaMax, alphaMax)] # bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2)
-CR = 0.05
-F = 0.7
+
+""" Paramètres pour l'algorithme DE """
+
+
+alphaMax = np.pi / 6                            ### Angle maximal de la manoeuvre en radians
+N_pop = 40                                      ### Nombre d'individus dans la population
+CR = 0.05                                       ### "Change Rate": probabilité de réalisation de la mutation
+F = 0.7                                         ### "Factor": sert à ??
+BOUNDS = [(0,T), (0,1), (-alphaMax, alphaMax)]  ### Bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2):
+                                                ### sert à vérifier que les individus de la population respectent ces limites après l'étape de cross-over.
 
 """ Constantes (fonction des paramètres) calculées une fois pour toutes """
 alMc = alphaMax ** 2
@@ -25,6 +32,19 @@ Tc = T ** 2
 
 
 class Flight():
+
+    #Cette classe crée un objet flight avec les attributs suivants:
+    #    speed: la norme de la vitesse de l'avion.
+    #    pointDepart: le point de départ de l'avion.
+    #    angle0: l'angle que fait la trajectoire initiale de l'avion avec l'axe des abscisses.
+    #        Ainsi en combinant "speed" et "angle0", on peut calculer le vecteur vitesse de l'avion.
+    #    manoeuvre: la manoeuvre que fait l'avion (objet à 3 attributs, défini dans la classe Manoeuvre).
+    #    dConflits: dictionnaire des conflits associés à l'avion. Les clés sont les autres avions avec lesquels
+    #        il est en conflit, et les valeurs la liste des temps de début et de fin de chaque conflit.
+    #    etat: attribut qui permet de savoir à quelle étape de la manoeuvre en est l'avion:
+    #        0 = avant la manoeuvre; 1 = montée initiale; 2 = retour à la trajectoire; 3 = manoeuvre terminée.
+    #        Initialisé à l'étape 0 (trajectoire initiale).
+
     def __init__(self, speed, pointDepart, angle0, manoeuvre):
         self.pointDepart = pointDepart
         self.angle0 = angle0
@@ -34,12 +54,9 @@ class Flight():
         self.etat = 0
 
 
-    # Permet de savoir à quelle étape de la manoeuvre en est l'avion: 0=avant la manoeuvre; 1= montée initiale; 2= retour à la trajectoire;3 manoeuvre
-    # terminée. Initialisé à etape 0 (trajectoire initiale)
-
-    # return 5 QPoints qui sont debut,fin et cassures de la trajectoire
-    # angles en radians
-    def pointTrajectory(self):
+    # Cette méthode renvoie 5 Qpoints correspondant respectivement: au début de la trajectoire, au début de la manoeuvre,
+    # au début du retour à la trajectoire initiale, à l'endroit où l'avion récupère la trajectoire initiale, à la fin de la trajectoire
+       def pointTrajectory(self):
         v = np.linalg.norm(self.speed)
         p0 = self.pointDepart
         p1 = p0 + QPoint(v * self.manoeuvre.t0 * np.cos(self.angle0),
@@ -59,7 +76,7 @@ class Flight():
         return [p0,p1,p2,p3,p4]
 
 
-    ## Fonction en cours qui doit donner une liste de plein de points de la trajectoire pour dépacer ensite les avion grace à Qt
+    # Cette méthode permet de générer suffisamment de points de la trajectoire pour déplacer ensuite les avions grâce à Qt
     def completeTrajectory(self,nbrPoint):
         intervalleTemps = T/nbrPoint
         resultat = [self.pointDepart]
@@ -80,6 +97,7 @@ class Flight():
         return resultat
 
 
+    # Cette méthode permet de récupérer la liste de tous les temps de conflits
     def listeConflits(self):
         return self.dConflits.values()
 
@@ -88,12 +106,18 @@ class Flight():
 
 
 class Manoeuvre():
+    # Cette classe crée un objet "manoeuvre" représentant la trajectoire d'évitement d'un avion.
+    # Elle dispose de 3 attributs:
+    #   t0: le temps de début de manoeuvre
+    #   t1: la durée de l'étape d'éloignement de la manoeuvre (au total la manoeuvre dure donc 2*t1)
+    #   alpha: l'angle de déviation par rapport à la trajectoire initiale de l'avion.
     def __init__(self, t0,t1,angle):
         self.t0 = t0
         self.t1 = t1
         self.angle = angle
 
-
+    # Ces méthodes permettent de réaliser des opérations entres manoeuvres
+    # (utile si l'on effectue l'algorithme de DE sur une population de manoeuvres)
     def __add__(self, other):
         return Manoeuvre(self.t0 + other.t0,self.t1+other.t1,self.angle+ other.angle)
 
@@ -105,14 +129,19 @@ class Manoeuvre():
 
     def __repr__(self):
         return ("t0:" + str(self.t0) + " t1:" + str(self.t1) + " angle:" + str(self.angle))
+
+    # Cette méthode permet de convertir une manoeuvre en un array (vecteur numpy)
     def convertMtoA(self):
         if T-self.t0 != 0:
             return np.array([self.t0, (2*self.t1)/(T-self.t0), self.angle])
         return np.array([self.t0, 0, self.angle])
 
+# Cette fonction convertit un array (vecteur numpy) en une manoeuvre
 def convertAtoM(manoeuvre):
     return Manoeuvre(manoeuvre[0],manoeuvre[1]*((T-manoeuvre[0])/2),manoeuvre[2])
 
+# Cette fonction permet de créer la population de listes de vecteurs à 3 dimensions (représentant chacun une manoeuvre)
+# pour l'algorithme DE à partir de la fonction InitPop
 def creaPop(Flights):
     global FLIGHTS
     FLIGHTS = Flights
@@ -134,9 +163,8 @@ def creaPop(Flights):
     return liste_manoeuvres
 
 
-# Fonction de calcul du cout
-# Prend en parametre Man une liste de manoeuvres (une pour chaque avion)
-
+# Fonction de calcul du coût des manoeuvres de tous les avions
+# Prend en paramètre Man une liste de manoeuvres (une pour chaque avion)
 def cout():
     C_ang = 0
     C_time = 0
@@ -145,6 +173,7 @@ def cout():
         C_time += (vol.manoeuvre.t1) ** 2 + ((T - vol.manoeuvre.t0) ** 2)
     return C_ang/alMc + C_time/Tc
 
+# Cette fonction calcule la durée cumulée de tous les conflits de tous les avions
 def dureeConflit(liste_Conflits):
     duree = 0
     for val in liste_Conflits:
@@ -154,6 +183,7 @@ def dureeConflit(liste_Conflits):
                     duree += j[1] - j[0]
     return duree /(2*T)
 
+# Fonction permettant  d'obtenie la liste de tous les conflits pour tous les avions
 def updateConflits():
     liste_Conflits = []
     for i in range(N_avion):
@@ -166,31 +196,30 @@ def updateConflits():
 
 
 
-# fonction fitness: # Prend en parametre Man une liste de manoeuvres (une pour chaque avion)
+# Fonction fitness:
+# L'algorithme DE cherche à la maximiser.
+# Elle va dans un premier temps éliminer les conflits, puis privilégiera les solutions qui réduisent la durée de manoeuvre.
+# Tant qu'elle reste inférieure à 1/2: il y a encore des conflits.
+# Elle prend en paramètre "Man" une liste de manoeuvres (une pour chaque avion)
 def fitness(Man):
     for i,vol in enumerate(FLIGHTS):
         vol.manoeuvre = convertAtoM(Man[i])
-    liste_Conflits = updateConflits()  #Contient tous les conflits de chaque vol
-    #print(liste_Conflits)
+    liste_Conflits = updateConflits()
     dureeConf = dureeConflit(liste_Conflits)
-    #print("fitness")
     if dureeConf > 10**(-10):
-    #if dureeConf != 0:
-
         return  1.0/(2.0 + dureeConf)
     else:
-
         return 0.5 + 1.0/(2+cout())
 
-
+# Fonction prenant un angle en paramètre et renvoyant la matrice de rotation directe de cet angle.
 def rotMatrix(theta):
     return np.array([[np.cos(theta), -np.sin(theta)],
                      [np.sin(theta), np.cos(theta)]])
-    # J'ai vérifié les signes, refait les calculs et inversé les signes, sinon c'était faux.
-    # Là on a bien la matrice d'une rotation directe
 
-# conflits 2 à 2 avec des vols
+# Fonction qui calcule les temps de début et de fin de conflit entre deux avions (s'il y a conflit).
+# On doit vérifier les conflits sur toutes les parties des trajectoires des deux avions.
 def conflit2a2(f1, f2):
+    # Dans un souci de clarté, on nomme toutes les variables utiles au calcul:
     ptdep1 = np.array([float(f1.pointDepart.x()),float(f1.pointDepart.y())])
     ptdep2 = np.array([float(f2.pointDepart.x()),float(f2.pointDepart.y())])
     v1 = f1.speed
@@ -201,14 +230,20 @@ def conflit2a2(f1, f2):
     t02 = f2.manoeuvre.t0
     alpha2 = f2.manoeuvre.angle
     t12 = f2.manoeuvre.t1
-    # Pour éviter que les aviosn rentrent plusieurs fois dans un if d'etat
+
+    # Pour éviter que les avions ne rentrent plusieurs fois dans un if d'etat, on utilise des compteurs.
     compteur1 = 0
-    angle1 = [alpha1,-2*alpha1,alpha1]
     compteur2 = 0
+
+    # Liste ordonnée de tous les angles permettant d'ajuster les vecteurs vitesses des avions
+    # sur chaque portion de leur trajectoire
+    angle1 = [alpha1, -2 * alpha1, alpha1]
     angle2 = [alpha2, -2 * alpha2, alpha2]
+
+    # Liste des temps où l'un des avions change de direction, car il faut calculer les conflits sur
+    # tous les segments temporels définis par ces valeurs.
     temps = sorted([(0,None),(t01,f1), (t01+t11,f1), (t01+2*t11,f1), (t02,f2), (t02+t12,f2), (t02+2*t12,f2)],\
                    key=lambda x:x[0])
-    #print("temps: " + str(temps))
     tOld = 0
     '''
     a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
@@ -232,33 +267,22 @@ def conflit2a2(f1, f2):
         f1.dConflits[f2].append((tmin, tmax))
         f2.dConflits[f1].append((tmin, tmax))
     ##'''
-    #print(f1,f2)
     for (i,t) in enumerate(temps):
-        #print(i,t)
         tCurrent = t[0]
         dt = tCurrent - tOld
-        #print(dt)
-        #print(dt)
         ptdep2 += dt * v2
         ptdep1 += dt * v1
-        #print(ptdep1,ptdep2)
-        #print(ptdep1,ptdep2)
         flightChanging = t[1]
         if flightChanging != None:
             flightChanging.etat += 1
-            #print(flightChanging)
             if flightChanging == f1:
                 v1 = np.dot(rotMatrix(angle1[compteur1]),v1)
-                #print("v1"+str(v1))
                 compteur1 += 1
             else:
                 v2 = np.dot(rotMatrix(angle2[compteur2]), v2)
-                #print("v2" + str(v2))
                 compteur2 += 1
 
-
-
-        # LE [0] est la coordonnée en x et [1] la coordonnée en y
+        # Dans notre modélisation, la composante [0] est la coordonnée en x et [1] celle en y
         a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
 
         b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) +
@@ -270,7 +294,6 @@ def conflit2a2(f1, f2):
         if racines != None:
             tdeb = min(racines) + t[0]
             tfin = max(racines) + t[0]
-            #print(tdeb,tfin)
             if i < len(temps)-1:
                 tiplus1 = temps[i+1][0]
             else:
@@ -278,7 +301,6 @@ def conflit2a2(f1, f2):
 
             tmax= max(tCurrent, min(tfin, tiplus1))
             tmin= max(tCurrent, min(tdeb, tiplus1))
-            #print(tmin,tmax)
 
             if f2 not in f1.dConflits.keys():
                 f1.dConflits[f2] = []
@@ -289,10 +311,13 @@ def conflit2a2(f1, f2):
                 f2.dConflits[f1].append((tmin, tmax))
 
         tOld = tCurrent
+
     # Pour que les etats soient revenus à 0 pour les fois suivantes
     f1.etat = 0
     f2.etat = 0
 
+# Fonction "maison" permettant de calculer les racines d'un polynôme du second degré (car numpy roots utilise les valeurs propres
+# de la matrice dont le polynôme est son polynôme caractéristique -> coûteux en temps)
 def second_degre (a,b,c) :
     delta = b**2 - 4*a*c
     if delta > 0 :

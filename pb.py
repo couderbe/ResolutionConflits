@@ -176,7 +176,7 @@ def dureeConflit(liste_Conflits):
 # fonction fitness: # Prend en parametre x une liste de manoeuvre (une pour chaque avion)
 def fitness(f):
 
-    liste_Conflits = updateConflits(f)  #Contient tout les conflits de chaque vol
+    liste_Conflits = updateConflits(f)  #Contient tous les conflits de chaque vol
     dureeConf = dureeConflit(liste_Conflits)
     #print(dureeConf)
     #if dureeConf > 10**(-5):
