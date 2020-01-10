@@ -159,7 +159,15 @@ class AircraftItem(QGraphicsItemGroup):
         self.item_conflit = QGraphicsEllipseItem()
         self.item_conflit.setRect(-CONFLICT_CIRCLE_SIZE / 2, -CONFLICT_CIRCLE_SIZE / 2, CONFLICT_CIRCLE_SIZE,
                                   CONFLICT_CIRCLE_SIZE)  # Les coords x,y centrent le cercle
+        dicoConflits = self.flight.listeConflits()
+        duree = 0
         self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH)
+        if len(dicoConflits) != 0:
+            for i in dicoConflits:
+                for j in i:
+                    duree += j[1] - j[0]
+        if duree != 0:
+            self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH_CONFLICT)
         self.addToGroup(self.item_conflit)
         #self.trajectoire = trajectoire
         # self.item_conflit.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
