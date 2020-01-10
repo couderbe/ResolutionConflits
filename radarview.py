@@ -14,18 +14,18 @@ CONFLICT_CIRCLE_SIZE = pb.d
 
 N_POINT_TRAJECTORY = pb.T
 
-# constant colors
+# Couleurs utilisées
 FLIGHT_COLOR = "blue"
 TRAJECTORY_COLOR = "black"
 CONFLICT_CIRCLE_COLOR = QColor(0, 255, 0, 100)
 CONFLICT_CIRCLE_COLOR_CONFLICT = QColor(255, 0, 0, 100)
 
-# creating the brushes
+# Création des Qbrushs
 FLIGHT_BRUSH = QBrush(QColor(FLIGHT_COLOR))
 CONFLICT_CIRCLE_BRUSH = QBrush(CONFLICT_CIRCLE_COLOR)
 CONFLICT_CIRCLE_BRUSH_CONFLICT = QBrush(CONFLICT_CIRCLE_COLOR_CONFLICT)
 
-
+# Reprise du TD pyairport
 class PanZoomView(QtWidgets.QGraphicsView):
     """An interactive view that supports Pan and Zoom functions"""
 
@@ -53,31 +53,30 @@ class RadarView(QtWidgets.QWidget):
     def __init__(self, flights):
         super().__init__()
 
-        # Settings
+        # Paramètres
         self.setWindowTitle("Resolution de conflits aeriens")
         self.resize(WIDTH, HEIGHT)
         self.currentPoint = 0
         self.flights = flights
 
-        # create components
+        # Création des composants
         root_layout = QtWidgets.QVBoxLayout(self)
         self.scene = QtWidgets.QGraphicsScene()
         self.scene.addRect(0, 0, 10, 10)
         self.view = PanZoomView(self.scene)
-        self.time_entry = QtWidgets.QLineEdit()
+        #self.time_entry = QtWidgets.QLineEdit()
 
-        # invert y axis for the view
+        # Inversion de l'axe des ordonnées
         self.view.scale(1, -1)
 
-        # add the trajectory elements to the graphic scene and then fit it in the view
+        # Ajout des trajectoires des avions
         self.add_trajectory_items(self.flights)
         self.fit_scene_in_view()
 
-        # add components to the root_layout
+        # Ajout de la view dans le root_layout
         root_layout.addWidget(self.view)
 
-        # add a slider to change the simulation time increment
-        # slider
+        # Création du slider de temps
         sld = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         sld.setMinimum(0)
         sld.setMaximum(N_POINT_TRAJECTORY - 1)
@@ -92,16 +91,16 @@ class RadarView(QtWidgets.QWidget):
             sliderlbl.setText(str(val))
             self.update_trajectory_items(val)
 
-        # connect signal to slot
+        # Abonnement du signal au slot
         sld.valueChanged.connect(changeCurrentPoint)
         self.speed_slider = sld
 
-        # add slider and labels to toolbar
+        # Ajout du slider à la toolbar
         toolbar = QtWidgets.QHBoxLayout()
         toolbar.addWidget(sld)
         toolbar.addWidget(sliderlbl)
         root_layout.addLayout(toolbar)
-        # show the window
+
         self.show()
 
     def fit_scene_in_view(self):
@@ -109,11 +108,10 @@ class RadarView(QtWidgets.QWidget):
 
     def add_trajectory_items(self, flights):
 
-        item_group = QtWidgets.QGraphicsItemGroup()
+        trajectory_group = QtWidgets.QGraphicsItemGroup()
         flight_group = QtWidgets.QGraphicsItemGroup()
-        self.scene.addItem(item_group)
+        self.scene.addItem(trajectory_group)
         self.scene.addItem(flight_group)
-        # airport_group.setZValue(AIRPORT_Z_VALUE)
 
         # Trajectories and starting points
         pen = QPen(QtGui.QColor(TRAJECTORY_COLOR), TRAJECTORY_WIDTH)
@@ -125,22 +123,21 @@ class RadarView(QtWidgets.QWidget):
             path.moveTo(trajectory[0].x(), trajectory[0].y())
             for xy in trajectory[1:]:
                 path.lineTo(xy.x(), xy.y())
-            item = QtWidgets.QGraphicsPathItem(path, item_group)
+            item = QtWidgets.QGraphicsPathItem(path, trajectory_group)
             item.setPen(pen)
-            item.setToolTip('Trajectoire ' + 'trajectory.name')
+            #item.setToolTip('Trajectoire ' + 'trajectory.name')
             item2 = AircraftItem(f)
             flight_group.addToGroup(item2)
 
-    # A modifier attention les temps des points sont pas les mêmes dans les trajectoires
-    # Parametre t: l'instant auquel on souhaite avancer les vols
+    # Paramètre t: l'instant auquel on souhaite avancer les vols
     def update_trajectory_items(self, t):
-        """ updates Plots views """
         liste_item = self.scene.items()
         for item in liste_item:
             if str(type(item)) == "<class 'radarview.AircraftItem'>":  # Pas beau ça
                 item.changePos(t)
 
-
+# Groupe de deux cercles permettant de visualiser l'avion (petit cercle bleu)
+# ainsi que son cercle de conflit (grand cercle vert ou rouge si conflit(s))
 class AircraftItem(QGraphicsItemGroup):
 
     def __init__(self, f):
@@ -148,12 +145,11 @@ class AircraftItem(QGraphicsItemGroup):
         # Création du point de l'avion
         self.item_avion = QGraphicsEllipseItem()
         self.item_avion.setRect(-PLANE_CIRCLE_SIZE / 2, -PLANE_CIRCLE_SIZE / 2, PLANE_CIRCLE_SIZE,
-                                PLANE_CIRCLE_SIZE)  # Les coords x,y centrent le cercle
+                                PLANE_CIRCLE_SIZE)  # Les coordonnées x,y centrent le cercle
         self.item_avion.setBrush(FLIGHT_BRUSH)
         self.addToGroup(self.item_avion)
         self.flight = f
         self.trajectoire = f.completeTrajectory(N_POINT_TRAJECTORY)
-        # self.item_avion.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
 
         # Création du cercle de conflit pour l'avion
         self.item_conflit = QGraphicsEllipseItem()
@@ -169,8 +165,6 @@ class AircraftItem(QGraphicsItemGroup):
         if duree != 0:
             self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH_CONFLICT)
         self.addToGroup(self.item_conflit)
-        #self.trajectoire = trajectoire
-        # self.item_conflit.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
         self.setPos(self.trajectoire[0] + QPoint(0, 0))
 
     def changePos(self, t):
