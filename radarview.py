@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsEllipseItem
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
 TRAJECTORY_WIDTH = 350
-PLANE_CIRCLE_SIZE = 500
+PLANE_CIRCLE_SIZE = 1000
 CONFLICT_CIRCLE_SIZE = pb.d
 
 N_POINT_TRAJECTORY = pb.T
@@ -18,10 +18,12 @@ N_POINT_TRAJECTORY = pb.T
 FLIGHT_COLOR = "blue"
 TRAJECTORY_COLOR = "black"
 CONFLICT_CIRCLE_COLOR = QColor(0, 255, 0, 100)
+CONFLICT_CIRCLE_COLOR_CONFLICT = QColor(255, 0, 0, 100)
 
 # creating the brushes
 FLIGHT_BRUSH = QBrush(QColor(FLIGHT_COLOR))
 CONFLICT_CIRCLE_BRUSH = QBrush(CONFLICT_CIRCLE_COLOR)
+CONFLICT_CIRCLE_BRUSH_CONFLICT = QBrush(CONFLICT_CIRCLE_COLOR_CONFLICT)
 
 
 class PanZoomView(QtWidgets.QGraphicsView):
@@ -126,7 +128,7 @@ class RadarView(QtWidgets.QWidget):
             item = QtWidgets.QGraphicsPathItem(path, item_group)
             item.setPen(pen)
             item.setToolTip('Trajectoire ' + 'trajectory.name')
-            item2 = AircraftItem(trajectory)
+            item2 = AircraftItem(f)
             flight_group.addToGroup(item2)
 
     # A modifier attention les temps des points sont pas les mêmes dans les trajectoires
@@ -141,7 +143,7 @@ class RadarView(QtWidgets.QWidget):
 
 class AircraftItem(QGraphicsItemGroup):
 
-    def __init__(self, trajectoire):
+    def __init__(self, f):
         super().__init__(None)
         # Création du point de l'avion
         self.item_avion = QGraphicsEllipseItem()
@@ -149,7 +151,8 @@ class AircraftItem(QGraphicsItemGroup):
                                 PLANE_CIRCLE_SIZE)  # Les coords x,y centrent le cercle
         self.item_avion.setBrush(FLIGHT_BRUSH)
         self.addToGroup(self.item_avion)
-        self.trajectoire = trajectoire
+        self.flight = f
+        self.trajectoire = f.completeTrajectory(N_POINT_TRAJECTORY)
         # self.item_avion.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
 
         # Création du cercle de conflit pour l'avion
@@ -158,10 +161,18 @@ class AircraftItem(QGraphicsItemGroup):
                                   CONFLICT_CIRCLE_SIZE)  # Les coords x,y centrent le cercle
         self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH)
         self.addToGroup(self.item_conflit)
-        self.trajectoire = trajectoire
+        #self.trajectoire = trajectoire
         # self.item_conflit.setPos(trajectoire[0] + QPoint(-PLANE_CIRCLE_SIZE/2,-PLANE_CIRCLE_SIZE/2))
-        self.setPos(trajectoire[0] + QPoint(0, 0))
+        self.setPos(self.trajectoire[0] + QPoint(0, 0))
 
     def changePos(self, t):
         point = self.trajectoire[t]
         self.setPos(point)
+        dicoConflits = self.flight.listeConflits()
+        duree = 0
+        if len(dicoConflits) != 0:
+            for i in dicoConflits:
+                for j in i:
+                    duree += j[1] - j[0]
+        if duree != 0:
+            self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH_CONFLICT)

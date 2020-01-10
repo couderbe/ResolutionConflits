@@ -15,6 +15,7 @@ RAYON_CERCLE = 185200 # Rayon du cercle en mètres, correpondant à 100 NM
 FICHIER = "Results/"
 EPSILON = 0.8
 VITESSE = 250
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         t = time.time()
