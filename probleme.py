@@ -109,7 +109,7 @@ class Manoeuvre():
         self.t1 = t1
         self.angle = angle
 
-    # Ces méthodes permettent de réaliser des opérations entres manoeuvres
+    # Ces méthodes permettent de réaliser des opérations entre manoeuvres
     # (utile si l'on effectue l'algorithme de DE sur une population de manoeuvres)
     def __add__(self, other):
         return Manoeuvre(self.t0 + other.t0, self.t1 + other.t1, self.angle + other.angle)
@@ -180,7 +180,7 @@ def dureeConflit(liste_Conflits):
     return duree / (2 * T)
 
 
-# Fonction permettant  d'obtenie la liste de tous les conflits pour tous les avions
+# Fonction permettant  d'obtenir la liste de tous les conflits pour tous les avions
 def updateConflits():
     liste_Conflits = []
     for i in range(N_avion):

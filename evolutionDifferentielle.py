@@ -15,7 +15,7 @@ def initPop(bounds, popsize):
 
 # Cette fonction sert à vérifier que les individus générés par les mutations/cross_over
 # respectent les limites définies pour les manoeuvres
-def ensure_bounds(vec, bounds):
+def keepLimits(vec, bounds):
     vec_new = []
     # Boucle sur tous les éléments du vecteur
     for elt in (vec):
@@ -37,7 +37,7 @@ def ensure_bounds(vec, bounds):
 
 
 def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
-    ### Initialisattion de la population
+    ### Initialisation de la population
     population = popInit
 
     ### Calcul du "score": fitness des individus de la population
@@ -52,58 +52,55 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
 
         gen_scores = []  # score keeping
 
+    ### Mutations et Cross-Overs de la population:
         # Boucle sur les individus de la population:
         for j in range(0, popsize):
 
             # Sélection de 3 individus différents de l'individu j
             # Pour cela, on sélectionne au hasard 3 indices différents de j
-            canidates = list(range(0, popsize))
-            canidates.pop(j)
-            random_index = random.sample(canidates, 3)
+            candidats = list(range(0, popsize))
+            candidats.pop(j)
+            random_index = random.sample(candidats, 3)
 
             x_1 = population[random_index[0]]
             x_2 = population[random_index[1]]
             x_3 = population[random_index[2]]
             x_t = population[j]  # target individual
 
-            # subtract x3 from x2, and create a new vector (x_diff)
-            x_diff = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)]
+            # Etapes de "Mutation" et "Cross_over" de j:
+            # x_mute est le candidat éventuel au remplacement de l'individu j
+            x = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)] # Cross_over
+            x_mute = [x_1_i + mutate * x_i for x_1_i, x_i in zip(x_1, x)] # Mutation
+            x_mute = keepLimits(x_mute, bounds) # Limitation
 
-            # multiply x_diff by the mutation factor (F) and add to x_1
-            v_donor = [x_1_i + mutate * x_diff_i for x_1_i, x_diff_i in zip(x_1, x_diff)]
-            v_donor = ensure_bounds(v_donor, bounds)
 
-            # --- RECOMBINATION (step #3.B) ----------------+
-
-            v_trial = []
+            # Etape de "Recombinaison":
+            # On remplace chaque composante de l'individu j avec une probabilité égale à "recombination".
+            x_replace = []
             for k in range(len(x_t)):
                 crossover = random.random()
                 if crossover <= recombination:
-                    v_trial.append(v_donor[k])
+                    x_replace.append(x_mute[k])
 
                 else:
-                    v_trial.append(x_t[k])
-            # --- GREEDY SELECTION (step #3.C) -------------+
+                    x_replace.append(x_t[k])
 
-            score_trial = cost_func(v_trial)
+            # Sélection de l'individu qui maximise la fonction de coût:
+            score_mute = cost_func(x_replace)
 
-            # score_target = cost_func(x_t)
-
-            if score_trial > popScore[j]:
-                population[j] = v_trial
-                gen_scores.append(score_trial)
-                popScore[j] = score_trial
-                # print('   >', score_trial, v_trial)
+            if score_mute > popScore[j]:
+                population[j] = x_replace
+                gen_scores.append(score_mute)
+                popScore[j] = score_mute
 
             else:
-                # print('   >', score_target, x_t)
                 gen_scores.append(popScore[j])
 
-        # --- SCORE KEEPING --------------------------------+
 
-        gen_avg = sum(gen_scores) / popsize  # current generation avg. fitness
-        gen_best = max(gen_scores)  # fitness of best individual
-        gen_sol = population[gen_scores.index(max(gen_scores))]  # solution of best individual
+        # Conservation des différentes valeurs de la fonction de coût de la génération courante:
+        gen_avg = sum(gen_scores) / popsize  # Moyenne des scores de la génération courante
+        gen_best = max(gen_scores)  # Score du meilleur individu
+        gen_sol = population[gen_scores.index(max(gen_scores))]  # Solution au problème: individu qui maximise la fonction de coût
 
         list_gen_avg.append(gen_avg)
         list_gen_best.append(gen_best)
