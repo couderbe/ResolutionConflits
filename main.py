@@ -14,23 +14,23 @@ ITERATIONS = 100
 RAYON_CERCLE = 185200 # Rayon du cercle en mètres, correpondant à 100 NM
 FICHIER = "Results/"
 EPSILON = 0.8
-
+VITESSE = 250
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         t = time.time()
-        v = [1 for k in range(pb.N_avion)]  # avoir la vitesse des avions (différentes)
-        Flights = cS.cercle_deforme(m, RAYON_CERCLE, v, EPSILON)
+        v = cS.vitesseConstante(VITESSE)  # avoir la vitesse des avions (différentes si on choisit la situation aleatoire (mettre une liste de borne min et borne max)
+        Flights = cS.hasard(VITESSE)
         population = pb.creaPop(Flights)
-        solution = de.algoDE(pb.fitness, pb.BOUNDS, pb.N_pop, pb.F, pb.CR, ITERATIONS, population)
-        print("Temps d'exécution: " + str((time.time() - t) / 60))
-        print("La meilleure solution est " + str(solution))
-        print(pb.fitness(solution))
-        ## Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
+        #solution = de.algoDE(pb.fitness, pb.BOUNDS, pb.N_pop, pb.F, pb.CR, ITERATIONS, population)
+        #print("Temps d'exécution: " + str((time.time() - t) / 60))
+        #print("La meilleure solution est " + str(solution))
+        #print(pb.fitness(solution))
+        # Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
 
-        for i, vol in enumerate(Flights):
-            vol.manoeuvre = pb.convertAtoM(solution[i])
-            print(vol.manoeuvre)
-        print(Flights)
+        #for i, vol in enumerate(Flights):
+         #   vol.manoeuvre = pb.convertAtoM(solution[i])
+          #  print(vol.manoeuvre)
+        #print(Flights)
         date = time.ctime(time.time())
         dateTest = "_".join(date.split()).replace(':', '_')
         filename = FICHIER + dateTest + '.txt'
@@ -38,7 +38,7 @@ if __name__ == "__main__":
             IO.write(Flights, filename)
         except Exception:
             print("Probleme d'enregistrement du fichier")
-    # trajectories = [vol.pointTrajectory() for vol in Flights]
+        trajectories = [vol.pointTrajectory() for vol in Flights]
 
     else:
         Flights = IO.read(sys.argv[1])

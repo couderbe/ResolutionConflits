@@ -94,7 +94,7 @@ class Flight():
         return self.dConflits.values()
 
     def __repr__(self):
-        return 'Vitesse: {0} Depart: {1} Manoeuvre: {2} Angle0: {3}\n'.format(self.speed, self.pointDepart,
+        return 'Vitesse: {0} Depart: {1} Manoeuvre: {2} Angle0: {3}'.format(self.speed, self.pointDepart,
                                                                               self.manoeuvre, self.angle0 * 180 / np.pi)
 
 
@@ -121,7 +121,7 @@ class Manoeuvre():
         return Manoeuvre(self.t0 * other, self.t1 * other, self.angle * other)
 
     def __repr__(self):
-        return 't0: {0} t1: {1} angle: {2}\n'.format(self.t0, self.t1, self.angle * 180 / np.pi)
+        return 't0: {0} t1: {1} angle: {2}'.format(self.t0, self.t1, self.angle * 180 / np.pi)
 
     # Cette méthode permet de convertir une manoeuvre en un array (vecteur numpy)
     def convertMtoA(self):
