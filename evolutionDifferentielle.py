@@ -43,6 +43,9 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
     ### Calcul du "score": fitness des individus de la population
     popScore = [cost_func(population[i]) for i in range(popsize)]
 
+    list_gen_avg = []
+    list_gen_best = []
+
     # Boucle sur toutes les générations (nombre de générations: maxiter)
     for i in range(1, maxiter + 1):
         print('GENERATION: ', i)
@@ -102,8 +105,11 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
         gen_best = max(gen_scores)  # fitness of best individual
         gen_sol = population[gen_scores.index(max(gen_scores))]  # solution of best individual
 
+        list_gen_avg.append(gen_avg)
+        list_gen_best.append(gen_best)
+
         # print('> GENERATION AVERAGE:', gen_avg,'\n')
         print('> GENERATION BEST:', gen_best, '\n')
         # print('> BEST SOLUTION:', gen_sol, '\n')
 
-    return gen_sol
+    return gen_sol,list_gen_avg,list_gen_best
