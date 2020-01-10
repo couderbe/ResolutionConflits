@@ -5,12 +5,9 @@ from PyQt5.QtCore import QPoint
 """ Paramètres Globaux """
 
 N_avion = 10  ### Nombre d'avions
-d = 5000  ### Distance de séparation (en millièmes de NM)!!!!
-# d_SI = A calculer absolument!!!!
+d = 9260  ### Distance de séparation (en mètres), correspondant à la norme de 5NM
 FLIGHTS = []
-T = 240  ### Temps total en ??? Il me semble qu'on avait pris 4 minutes soit 240 secondes, ou bien 40 minutes, soit 240 dA secondes??
-# T_SI = A calculer absolument!!!!
-# Si nos d_SI et T_SI donnent un truc trop petit, on pourra "rescaler" la fenetre de QT, par ex en utilisant (10,-10) ou (0.1, -0.1) à la place de (1,-1)
+T = 1800 ### Temps total en secondes, correspondant à 30 minutes.
 
 
 """ Paramètres pour l'algorithme DE """
@@ -18,7 +15,7 @@ T = 240  ### Temps total en ??? Il me semble qu'on avait pris 4 minutes soit 240
 alphaMax = np.pi / 6  ### Angle maximal de la manoeuvre en radians
 N_pop = 40  ### Nombre d'individus dans la population
 CR = 0.05  ### "Change Rate": probabilité de réalisation de la mutation
-F = 0.7  ### "Factor": sert à ??
+F = 0.7  ### Facteur de mutation, doit être compris entre 0 et 2
 BOUNDS = [(0, T), (0, 1), (-alphaMax, alphaMax)]  ### Bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2):
 ### sert à vérifier que les individus de la population respectent ces limites après l'étape de cross-over.
 
@@ -98,7 +95,7 @@ class Flight():
 
     def __repr__(self):
         return 'Vitesse: {0} Depart: {1} Manoeuvre: {2} Angle0: {3}\n'.format(self.speed, self.pointDepart,
-                                                                              self.angle0 * 180 / np.pi)
+                                                                              self.manoeuvre, self.angle0 * 180 / np.pi)
 
 
 class Manoeuvre():
@@ -247,28 +244,7 @@ def conflit2a2(f1, f2):
         [(0, None), (t01, f1), (t01 + t11, f1), (t01 + 2 * t11, f1), (t02, f2), (t02 + t12, f2), (t02 + 2 * t12, f2)], \
         key=lambda x: x[0])
     tOld = 0
-    '''
-    a = (v1[0] - v2[0]) ** 2 + (v1[1] - v2[1]) ** 2
 
-    b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) + (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
-
-    c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
-
-    racines = second_degre(a, b, c)
-    tdeb = min(racines)
-    tfin = max(racines)
-
-    tmax = max(0, min(tfin,T))
-    tmin = max(0, min(tdeb,T))
-
-    if f2 not in f1.dConflits.keys():
-        f1.dConflits[f2] = []
-        f2.dConflits[f1] = []
-
-    if (tmin, tmax) not in f1.dConflits[f2]:
-        f1.dConflits[f2].append((tmin, tmax))
-        f2.dConflits[f1].append((tmin, tmax))
-    ##'''
     for (i, t) in enumerate(temps):
         tCurrent = t[0]
         dt = tCurrent - tOld

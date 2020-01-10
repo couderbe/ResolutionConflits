@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QGraphicsItemGroup, QGraphicsEllipseItem
 
 WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
-TRAJECTORY_WIDTH = 100
+TRAJECTORY_WIDTH = 350
 PLANE_CIRCLE_SIZE = 500
 CONFLICT_CIRCLE_SIZE = pb.d
 

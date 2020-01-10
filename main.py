@@ -10,15 +10,16 @@ import creationSituation as cS
 
 ###----------CONSTANTES--------###
 m = 2 * 3.1416 / pb.N_avion
-ITERATIONS = 500
-RAYON_CERCLE = 30000
+ITERATIONS = 100
+RAYON_CERCLE = 185200 # Rayon du cercle en mètres, correpondant à 100 NM
 FICHIER = "Results/"
+EPSILON = 0.8
 
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         t = time.time()
         v = [1 for k in range(pb.N_avion)]  # avoir la vitesse des avions (différentes)
-        Flights = cS.cercle(m, RAYON_CERCLE, v)
+        Flights = cS.cercle_deforme(m, RAYON_CERCLE, v, EPSILON)
         population = pb.creaPop(Flights)
         solution = de.algoDE(pb.fitness, pb.BOUNDS, pb.N_pop, pb.F, pb.CR, ITERATIONS, population)
         print("Temps d'exécution: " + str((time.time() - t) / 60))
