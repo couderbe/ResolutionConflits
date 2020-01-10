@@ -2,13 +2,8 @@ import random
 import numpy as np
 
 
-def func1(x):
-    # Sphere function, use any bounds, f(0,...,0)=0
-    return sum([np.linalg.norm(x[i]) for i in range(len(x))])
-
-
+# Cette fonction sert à créer la population de départ de l'algorithme DE
 def initPop(bounds, popsize):
-    # --- INITIALIZE A POPULATION (step #1) ----------------+
     population = []
     for i in range(0, popsize):
         indv = []
@@ -18,21 +13,23 @@ def initPop(bounds, popsize):
     return population
 
 
+# Cette fonction sert à vérifier que les individus générés par les mutations/cross_over
+# respectent les limites définies pour les manoeuvres
 def ensure_bounds(vec, bounds):
     vec_new = []
-    # cycle through each variable in vector
+    # Boucle sur tous les éléments du vecteur
     for elt in (vec):
         elt_new = np.zeros(len(elt))
         for i in range(len(elt)):
-            # variable exceedes the minimum boundary
+            # Si l'élément est inférieur à la limite basse
             if elt[i] < bounds[i][0]:
                 elt_new[i] = bounds[i][0]
 
-            # variable exceedes the maximum boundary
+            # Si l'élément est supérieur à la limite haute
             if elt[i] > bounds[i][1]:
                 elt_new[i] = bounds[i][1]
 
-            # the variable is fine
+            # On conserve l'élément sinon
             if bounds[i][0] <= elt[i] <= bounds[i][1]:
                 elt_new[i] = elt[i]
         vec_new.append(elt_new)
@@ -40,23 +37,23 @@ def ensure_bounds(vec, bounds):
 
 
 def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
-    # --- INITIALISATION ----------------+
+    ### Initialisattion de la population
     population = popInit
 
-    # --- RESOLUTION --------------------+
+    ### Calcul du "score": fitness des individus de la population
     popScore = [cost_func(population[i]) for i in range(popsize)]
-    # cycle through each generation (step #2)
+
+    # Boucle sur toutes les générations (nombre de générations: maxiter)
     for i in range(1, maxiter + 1):
         print('GENERATION: ', i)
 
         gen_scores = []  # score keeping
 
-        # cycle through each individual in the population
+        # Boucle sur les individus de la population:
         for j in range(0, popsize):
 
-            # --- MUTATION (step #3.A) ---------------------+
-
-            # select three random vector index positions [0, popsize), not including current vector (j)
+            # Sélection de 3 individus différents de l'individu j
+            # Pour cela, on sélectionne au hasard 3 indices différents de j
             canidates = list(range(0, popsize))
             canidates.pop(j)
             random_index = random.sample(canidates, 3)
