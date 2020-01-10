@@ -3,7 +3,7 @@ from PyQt5.QtCore import QPoint
 import probleme as pb
 
 
-###Fonction qui lit
+### Fonction permettant de lire un fichier texte contenant les paramètres de tous les avions et leurs manoeuvres
 def read(filename):
     Flights = []
     with open(filename, 'r') as file:
@@ -16,7 +16,8 @@ def read(filename):
     return Flights
 
 
-###Fonction qui écrit les résultats pour les sauvegarder
+### Fonction écrivant les paramètres de tous les avions de la solution trouvée, afin de la stocker et de pouvoir la
+### consulter ultérieurement.
 def write(Flights, filename):
     with open(filename, 'w') as file:
         for f in Flights:
