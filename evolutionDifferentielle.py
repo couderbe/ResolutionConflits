@@ -1,12 +1,14 @@
 import random
 import numpy as np
 
+
 def func1(x):
     # Sphere function, use any bounds, f(0,...,0)=0
     return sum([np.linalg.norm(x[i]) for i in range(len(x))])
 
-def initPop(bounds, popsize ):
-# --- INITIALIZE A POPULATION (step #1) ----------------+
+
+def initPop(bounds, popsize):
+    # --- INITIALIZE A POPULATION (step #1) ----------------+
     population = []
     for i in range(0, popsize):
         indv = []
@@ -15,23 +17,24 @@ def initPop(bounds, popsize ):
         population.append(indv)
     return population
 
+
 def ensure_bounds(vec, bounds):
     vec_new = []
     # cycle through each variable in vector
     for elt in (vec):
-        elt_new= np.zeros(len(elt))
+        elt_new = np.zeros(len(elt))
         for i in range(len(elt)):
-        # variable exceedes the minimum boundary
+            # variable exceedes the minimum boundary
             if elt[i] < bounds[i][0]:
-                elt_new[i]=bounds[i][0]
+                elt_new[i] = bounds[i][0]
 
-        # variable exceedes the maximum boundary
+            # variable exceedes the maximum boundary
             if elt[i] > bounds[i][1]:
-                elt_new[i]=bounds[i][1]
+                elt_new[i] = bounds[i][1]
 
-        # the variable is fine
+            # the variable is fine
             if bounds[i][0] <= elt[i] <= bounds[i][1]:
-                elt_new[i]=elt[i]
+                elt_new[i] = elt[i]
         vec_new.append(elt_new)
     return vec_new
 
@@ -84,16 +87,16 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
 
             score_trial = cost_func(v_trial)
 
-            #score_target = cost_func(x_t)
+            # score_target = cost_func(x_t)
 
             if score_trial > popScore[j]:
                 population[j] = v_trial
                 gen_scores.append(score_trial)
                 popScore[j] = score_trial
-                #print('   >', score_trial, v_trial)
+                # print('   >', score_trial, v_trial)
 
             else:
-                #print('   >', score_target, x_t)
+                # print('   >', score_target, x_t)
                 gen_scores.append(popScore[j])
 
         # --- SCORE KEEPING --------------------------------+
@@ -102,8 +105,8 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
         gen_best = max(gen_scores)  # fitness of best individual
         gen_sol = population[gen_scores.index(max(gen_scores))]  # solution of best individual
 
-        #print('> GENERATION AVERAGE:', gen_avg,'\n')
-        print('> GENERATION BEST:', gen_best,'\n')
-        #print('> BEST SOLUTION:', gen_sol, '\n')
+        # print('> GENERATION AVERAGE:', gen_avg,'\n')
+        print('> GENERATION BEST:', gen_best, '\n')
+        # print('> BEST SOLUTION:', gen_sol, '\n')
 
     return gen_sol
