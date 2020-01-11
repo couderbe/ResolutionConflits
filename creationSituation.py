@@ -1,4 +1,10 @@
-# Situation première avec un cercle
+#
+# Ce module permet de créer différentes configurations de départ, où les avions sont placés:
+#   - régulièrement autour d'un cercle
+#   - autour d'un cercle, mais avec quelques variations de rayon et de régularité (on perturbe le rayon, et l'angle)
+#   - aléatoirement dans la fenêtre d'observation
+#
+# Les vitesses des avions peuvent être toutes similaires ou différentes, comprises aléatoirement entre deux valeurs.
 
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QPoint
@@ -41,13 +47,16 @@ def hasard(liste_vitesse_avion):
         angle = random.uniform(-np.pi/6,np.pi/6)
         val = np.array ([val_x, val_y])
         distance = np.linalg.norm(position[-1] - val)
+        # Cette condition sert à éliminer les situations où les avions sont en conflit dès le départ,
+        # ce qui serait irrésoluble avec une manoeuvre:
         if distance >= pb.d :
             position.append(val)
             i += 1
-    #print(position)
+    # Cette boucle nous permet de définir l'angle de la trajectoire initiale de manière à ce que les avions se croisent
+    # et engendre donc une situation de départ avec des conflits.
     for pos in position :
-        if pos[0] >= 0 : #val de x
-            if pos[1] >= 0 : #val de y"
+        if pos[0] >= 0 : # Valeur de la coordonnée x de l'avion
+            if pos[1] >= 0 : # Valeur de la coordonnée y de l'avion
                 angle_hasard = (3*np.pi)/4 + ((np.pi/4)*random.random())
                 liste_angle.append(angle_hasard)
             else :

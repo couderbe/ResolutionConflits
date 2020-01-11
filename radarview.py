@@ -25,7 +25,7 @@ FLIGHT_BRUSH = QBrush(QColor(FLIGHT_COLOR))
 CONFLICT_CIRCLE_BRUSH = QBrush(CONFLICT_CIRCLE_COLOR)
 CONFLICT_CIRCLE_BRUSH_CONFLICT = QBrush(CONFLICT_CIRCLE_COLOR_CONFLICT)
 
-# Reprise du TD pyairport
+# Reprise du TD pyairport:
 class PanZoomView(QtWidgets.QGraphicsView):
     """An interactive view that supports Pan and Zoom functions"""
 
@@ -167,6 +167,11 @@ class AircraftItem(QGraphicsItemGroup):
         self.addToGroup(self.item_conflit)
         self.setPos(self.trajectoire[0] + QPoint(0, 0))
 
+# Cette fonction sert à définir la position de l'avion à l'instant t
+# Elle change également la couleur du cercle de conflits d'un avion au
+# cas où il est encore impliqué dans au moins un conflit.
+# Cela nous permet de vérifier visuellement s'il persiste des conflits,
+# et dans ce cas, quels avions sont impliqués.
     def changePos(self, t):
         point = self.trajectoire[t]
         self.setPos(point)

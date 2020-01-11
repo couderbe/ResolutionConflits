@@ -290,7 +290,7 @@ def conflit2a2(f1, f2):
 
         tOld = tCurrent
 
-    # Pour que les etats soient revenus à 0 pour les fois suivantes
+    # Pour que les états soient revenus à 0 pour les fois suivantes
     f1.etat = 0
     f2.etat = 0
 
