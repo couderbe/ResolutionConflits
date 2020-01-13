@@ -1,27 +1,12 @@
 import evolutionDifferentielle
 import numpy as np
 from PyQt5.QtCore import QPoint
-
+import constantes as ct
 """ Paramètres Globaux """
-
-N_avion = 10  ### Nombre d'avions
-d = 9260  ### Distance de séparation (en mètres), correspondant à la norme de 5NM
 FLIGHTS = []
-T = 1800 ### Temps total en secondes, correspondant à 30 minutes.
 
 
-""" Paramètres pour l'algorithme DE """
 
-alphaMax = np.pi / 6  ### Angle maximal de la manoeuvre en radians
-N_pop = 40  ### Nombre d'individus dans la population
-CR = 0.05  ### "Change Rate": probabilité de réalisation de la mutation
-F = 0.7  ### Facteur de mutation, doit être compris entre 0 et 2
-BOUNDS = [(0, T), (0, 1), (-alphaMax, alphaMax)]  ### Bornes de alpha, t0 et theta avec t1=theta*((T-t0)/2):
-### sert à vérifier que les individus de la population respectent ces limites après l'étape de cross-over.
-
-""" Constantes (fonction des paramètres) calculées une fois pour toutes """
-alMc = alphaMax ** 2
-Tc = T ** 2
 
 
 class Flight():
@@ -61,15 +46,15 @@ class Flight():
             -self.manoeuvre.angle + self.angle0),
                          v * self.manoeuvre.t1 * np.sin(
                              -self.manoeuvre.angle + self.angle0))
-        p4 = p3 + QPoint(v * (T - self.manoeuvre.t0 - 2 * self.manoeuvre.t1) * np.cos(
+        p4 = p3 + QPoint(v * (ct.T - self.manoeuvre.t0 - 2 * self.manoeuvre.t1) * np.cos(
             self.angle0),
-                         v * (T - self.manoeuvre.t0 - 2 * self.manoeuvre.t1) * np.sin(
+                         v * (ct.T - self.manoeuvre.t0 - 2 * self.manoeuvre.t1) * np.sin(
                              self.angle0))
         return [p0, p1, p2, p3, p4]
 
     # Cette méthode permet de générer suffisamment de points de la trajectoire pour déplacer ensuite les avions grâce à Qt
     def completeTrajectory(self, nbrPoint):
-        intervalleTemps = T / nbrPoint
+        intervalleTemps = ct.T / nbrPoint
         resultat = [self.pointDepart]
         v = np.linalg.norm(self.speed)
         for k in range(1, nbrPoint):
@@ -125,14 +110,14 @@ class Manoeuvre():
 
     # Cette méthode permet de convertir une manoeuvre en un array (vecteur numpy)
     def convertMtoA(self):
-        if T - self.t0 != 0:
-            return np.array([self.t0, (2 * self.t1) / (T - self.t0), self.angle])
+        if ct.T - self.t0 != 0:
+            return np.array([self.t0, (2 * self.t1) / (ct.T - self.t0), self.angle])
         return np.array([self.t0, 0, self.angle])
 
 
 # Cette fonction convertit un array (vecteur numpy) en une manoeuvre
 def convertAtoM(manoeuvre):
-    return Manoeuvre(manoeuvre[0], manoeuvre[1] * ((T - manoeuvre[0]) / 2), manoeuvre[2])
+    return Manoeuvre(manoeuvre[0], manoeuvre[1] * ((ct.T - manoeuvre[0]) / 2), manoeuvre[2])
 
 
 # Cette fonction permet de créer la population de listes de vecteurs à 3 dimensions (représentant chacun une manoeuvre)
@@ -140,6 +125,9 @@ def convertAtoM(manoeuvre):
 def creaPop(Flights):
     global FLIGHTS
     FLIGHTS = Flights
+    N_avion = ct.N_avion
+    BOUNDS = ct.BOUNDS
+    N_pop = ct.N_pop
     bounds_t0 = [BOUNDS[0] for k in range(N_avion)]
     bounds_theta = [BOUNDS[1] for k in range(N_avion)]
     bounds_alpha = [BOUNDS[2] for k in range(N_avion)]
@@ -165,8 +153,8 @@ def cout():
     C_time = 0
     for vol in FLIGHTS:
         C_ang += vol.manoeuvre.angle ** 2
-        C_time += (vol.manoeuvre.t1) ** 2 + ((T - vol.manoeuvre.t0) ** 2)
-    return C_ang / alMc + C_time / Tc
+        C_time += (vol.manoeuvre.t1) ** 2 + ((ct.T - vol.manoeuvre.t0) ** 2)
+    return C_ang / ct.alMc + C_time / ct.Tc
 
 
 # Cette fonction calcule la durée cumulée de tous les conflits de tous les avions
@@ -177,11 +165,12 @@ def dureeConflit(liste_Conflits):
             for i in val:
                 for j in i:
                     duree += j[1] - j[0]
-    return duree / (2 * T)
+    return duree / (2 * ct.T)
 
 
 # Fonction permettant  d'obtenir la liste de tous les conflits pour tous les avions
 def updateConflits():
+    N_avion = ct.N_avion
     liste_Conflits = []
     for i in range(N_avion):
         FLIGHTS[i].dConflits = {}
@@ -266,7 +255,7 @@ def conflit2a2(f1, f2):
         b = 2 * ((ptdep1[0] - ptdep2[0]) * (v1[0] - v2[0]) +
                  (ptdep1[1] - ptdep2[1]) * (v1[1] - v2[1]))
 
-        c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - d ** 2
+        c = (ptdep1[0] - ptdep2[0]) ** 2 + (ptdep1[1] - ptdep2[1]) ** 2 - ct.d ** 2
 
         racines = second_degre(a, b, c)
         if racines != None:
@@ -275,7 +264,7 @@ def conflit2a2(f1, f2):
             if i < len(temps) - 1:
                 tiplus1 = temps[i + 1][0]
             else:
-                tiplus1 = T
+                tiplus1 = ct.T
 
             tmax = max(tCurrent, min(tfin, tiplus1))
             tmin = max(tCurrent, min(tdeb, tiplus1))

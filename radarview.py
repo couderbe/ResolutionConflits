@@ -1,5 +1,5 @@
 import math
-import probleme as pb
+import constantes as ct
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QPoint
@@ -10,9 +10,9 @@ WIDTH = 800  # Initial window width (pixels)
 HEIGHT = 450  # Initial window height (pixels)
 TRAJECTORY_WIDTH = 350
 PLANE_CIRCLE_SIZE = 1000
-CONFLICT_CIRCLE_SIZE = pb.d
+CONFLICT_CIRCLE_SIZE = ct.d
 
-N_POINT_TRAJECTORY = pb.T
+N_POINT_TRAJECTORY = ct.T
 
 # Couleurs utilisées
 FLIGHT_COLOR = "blue"

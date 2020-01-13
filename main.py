@@ -8,40 +8,35 @@ import IO
 import sys
 import creationSituation as cS
 import matplotlib.pyplot as plt
+import constantes as ct
 
-### ---------- CONSTANTES ---------- ###
-m = 2 * 3.1416 / pb.N_avion
-ITERATIONS = 100
-RAYON_CERCLE = 185200 # Rayon du cercle en mètres, correpondant à 100 NM
-FICHIER = "Results/"
-REPERTOIRE_FITNESS = "FitnessEvolution/"
-EPSILON = 0.8
-VITESSE = 250
 
 ### ---------- MAIN ---------- ###
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    IO.readCommand(sys.argv)
+
+    if ct.TYPE_FCT == "Calcul":
         t = time.time()
-        liste_vitesse_avion = cS.vitesseConstante(VITESSE)  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
-        Flights = cS.cercle(m,RAYON_CERCLE,liste_vitesse_avion)
+        liste_vitesse_avion = cS.vitesseConstante(ct.VITESSE)  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
+        Flights = cS.cercle(ct.m,ct.RAYON_CERCLE,liste_vitesse_avion)
         population = pb.creaPop(Flights)
-        solution,list_gen_avg,list_gen_best = de.algoDE(pb.fitness, pb.BOUNDS, pb.N_pop, pb.F, pb.CR, ITERATIONS, population)
+        solution,list_gen_avg,list_gen_best = de.algoDE(pb.fitness, ct.BOUNDS, ct.N_pop, ct.F, ct.CR, ct.ITERATIONS, population)
 
 
-        x = [k for k in range(ITERATIONS)]
+        x = [k for k in range(ct.ITERATIONS)]
         yAvg = list_gen_avg
         yBest = list_gen_best
         fig = plt.figure(1, figsize=(20, 10))
         plt.plot(x, yAvg, 'b')
         plt.plot(x, yBest, 'r')
-        plt.plot(x, [0.5 for k in range(ITERATIONS)], 'g--')
+        plt.plot(x, [0.5 for k in range(ct.ITERATIONS)], 'g--')
         plt.title("Evolution de la fitness en fonction du nombre d'itérations")
         plt.legend(["Moyenne population", "Meilleur individu", "Seuil du zéro-conflit"], loc=4)
         plt.xlabel("Itérations")
         plt.ylabel("Fitness")
-
-        print("Temps d'exécution: " + str((time.time() - t) / 60))
+        tExec = (time.time() - t) / 60
+        print("Temps d'exécution: " + str(tExec))
         print("La meilleure solution est " + str(solution))
         print(pb.fitness(solution))
         # Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
@@ -52,17 +47,17 @@ if __name__ == "__main__":
         print(Flights)
         date = time.ctime(time.time())
         dateTest = "_".join(date.split()).replace(':', '_')
-        filename = FICHIER + dateTest + '.txt'
+        filename = ct.FICHIER + dateTest + '.txt'
+        fileFitnessname = ct.FICHIER + ct.REPERTOIRE_FITNESS + dateTest + '.png'
         try:
-            IO.write(Flights, filename)
+            IO.write(Flights, filename, tExec)
+            plt.savefig(fileFitnessname)
         except Exception:
             print("Probleme d'enregistrement du fichier")
         trajectories = [vol.pointTrajectory() for vol in Flights]
-        # fileFitnessname = FICHIER + REPERTOIRE_FITNESS + dateTest + '.png'
-        # plt.savefig(fileFitnessname)
         plt.show(block = False)
     else:
-        Flights = IO.read(sys.argv[1])
+        Flights = IO.read(ct.TYPE_FCT)
     # Initialisation Qt
     app = QtWidgets.QApplication([])
 
