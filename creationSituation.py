@@ -13,6 +13,9 @@ import random
 
 import probleme as pb
 import numpy as np
+BORNE_MIN = -100000
+AMPLITUDE = 200000
+
 
 def vitesseConstante (vitesse) :
     return [vitesse for k in range(pb.N_avion)]
@@ -37,19 +40,24 @@ def cercle_deforme(m, RAYON_CERCLE, liste_vitesse_avion, epsilon):
 
 def hasard(liste_vitesse_avion):
     liste_angle = []
-    val_x = -100000 + 200000 * random.random()
-    val_y = -100000 + 200000 * random.random()
+    val_x = BORNE_MIN+ AMPLITUDE * random.random()
+    val_y = BORNE_MIN + AMPLITUDE * random.random()
     position = [np.array ([val_x, val_y])]
     i = 1
     while i < pb.N_avion:
-        val_x = -100000 + 200000*random.random()
-        val_y = -100000 + 200000*random.random()
+        val_x = BORNE_MIN + AMPLITUDE*random.random()
+        val_y = BORNE_MIN + AMPLITUDE*random.random()
         angle = random.uniform(-np.pi/6,np.pi/6)
         val = np.array ([val_x, val_y])
-        distance = np.linalg.norm(position[-1] - val)
+
         # Cette condition sert à éliminer les situations où les avions sont en conflit dès le départ,
         # ce qui serait irrésoluble avec une manoeuvre:
-        if distance >= pb.d :
+        pas_erreur = True
+        for pos in position :
+            distance = np.linalg.norm(pos - val)
+            if distance <= pb.d :
+                pas_erreur = False
+        if pas_erreur :
             position.append(val)
             i += 1
     # Cette boucle nous permet de définir l'angle de la trajectoire initiale de manière à ce que les avions se croisent
