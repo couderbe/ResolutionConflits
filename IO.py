@@ -32,6 +32,14 @@ def write(Flights, filename, tExec):
 def readCommand(args):
     for i,arg in enumerate(args):
         if arg[0] == '-':
-            f_constante = ct.dictParam[arg[1:]]
-            f_constante(args[i+1])
-    ct.recalculConsts()
+            constante = ct.dictParam[arg[1:]]
+            ct.constante = args[i+1]
+    ct.recalculConsts(
+    )
+def readargs(args):
+    d={}
+    for i,arg in enumerate(args):
+        if arg[0] == '-':
+            constante = ct.dictParam[arg[1:]]
+            d[arg[1:]] = args[i+1]
+    return d

@@ -9,17 +9,28 @@ import sys
 import creationSituation as cS
 import matplotlib.pyplot as plt
 import constantes as ct
+import argparse
+
 
 
 ### ---------- MAIN ---------- ###
 
 if __name__ == "__main__":
-    IO.readCommand(sys.argv)
 
-    if ct.TYPE_FCT == "Calcul":
+    if ct.FILE == None:
         t = time.time()
-        liste_vitesse_avion = cS.vitesseConstante(ct.VITESSE)  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
-        Flights = cS.cercle(ct.m,ct.RAYON_CERCLE,liste_vitesse_avion)
+        if ct.SPEED_TYPE == 0:
+            liste_vitesse_avion = cS.vitesseConstante(int(ct.VITESSE))  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
+        else:
+            print(ct.VITESSE[1:-2].split(','))
+            liste_vitesse_avion = cS.vitesseAleatoire(ct.VITESSE[1:-2].split(','))
+        type = ct.TYPE_FCT
+        if type == 0:
+            Flights = cS.cercle(ct.m,ct.RAYON_CERCLE,liste_vitesse_avion)
+        elif type == 1:
+            Flights = cS.cercle_deforme(ct.m, ct.RAYON_CERCLE, liste_vitesse_avion,ct.EPSILON)
+        elif type == 2:
+            Flights = cS.hasard(liste_vitesse_avion)
         population = pb.creaPop(Flights)
         solution,list_gen_avg,list_gen_best = de.algoDE(pb.fitness, ct.BOUNDS, ct.N_pop, ct.F, ct.CR, ct.ITERATIONS, population)
 
@@ -50,6 +61,8 @@ if __name__ == "__main__":
         filename = ct.FICHIER + dateTest + '.txt'
         fileFitnessname = ct.FICHIER + ct.REPERTOIRE_FITNESS + dateTest + '.png'
         try:
+            print(filename)
+            print(fileFitnessname)
             IO.write(Flights, filename, tExec)
             plt.savefig(fileFitnessname)
         except Exception:
@@ -57,7 +70,7 @@ if __name__ == "__main__":
         trajectories = [vol.pointTrajectory() for vol in Flights]
         plt.show(block = False)
     else:
-        Flights = IO.read(ct.TYPE_FCT)
+        Flights = IO.read(ct.FILE)
     # Initialisation Qt
     app = QtWidgets.QApplication([])
 
@@ -75,3 +88,5 @@ if __name__ == "__main__":
 
     # enter the main loop
     app.exec_()
+
+

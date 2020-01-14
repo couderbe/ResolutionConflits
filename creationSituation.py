@@ -22,7 +22,7 @@ def vitesseConstante (vitesse) :
     return [vitesse for k in range(ct.N_avion)]
 
 def vitesseAleatoire(vitesse) :
-    return [random.uniform(vitesse[0],vitesse[1]) for k in range(ct.N_avion)]
+    return [random.uniform(float(vitesse[0]),float(vitesse[1])) for k in range(ct.N_avion)]
 
 def cercle(m, RAYON_CERCLE, liste_vitesse_avion):
     return [pb.Flight(liste_vitesse_avion[k], QPoint(RAYON_CERCLE * np.cos(m * k),  RAYON_CERCLE * np.sin(m * k)),
@@ -45,7 +45,7 @@ def hasard(liste_vitesse_avion):
     val_y = BORNE_MIN + AMPLITUDE * random.random()
     position = [np.array ([val_x, val_y])]
     i = 1
-    while i < pb.N_avion:
+    while i < ct.N_avion:
         val_x = BORNE_MIN + AMPLITUDE*random.random()
         val_y = BORNE_MIN + AMPLITUDE*random.random()
         angle = random.uniform(-np.pi/6,np.pi/6)
