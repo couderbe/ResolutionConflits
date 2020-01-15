@@ -175,11 +175,3 @@ class AircraftItem(QGraphicsItemGroup):
     def changePos(self, t):
         point = self.trajectoire[t]
         self.setPos(point)
-        dicoConflits = self.flight.listeConflits()
-        duree = 0
-        if len(dicoConflits) != 0:
-            for i in dicoConflits:
-                for j in i:
-                    duree += j[1] - j[0]
-        if duree != 0:
-            self.item_conflit.setBrush(CONFLICT_CIRCLE_BRUSH_CONFLICT)

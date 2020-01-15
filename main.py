@@ -8,6 +8,7 @@ import IO
 import creationSituation as cS
 import matplotlib.pyplot as plt
 import constantes as ct
+import numpy as np
 
 
 ### ---------- MAIN ---------- ###
@@ -68,7 +69,9 @@ if __name__ == "__main__":
         plt.show(block = False)
     else:
         Flights = IO.read(ct.FILE)
-        pb.fitness(Flights)
+        Man = [vol.manoeuvre.convertMtoA() for vol in Flights]
+        print(pb.fitness(Man,Flights))
+        pb.updateConflits(Flights)
     # Initialisation Qt
     app = QtWidgets.QApplication([])
 
