@@ -25,6 +25,7 @@ FLIGHT_BRUSH = QBrush(QColor(FLIGHT_COLOR))
 CONFLICT_CIRCLE_BRUSH = QBrush(CONFLICT_CIRCLE_COLOR)
 CONFLICT_CIRCLE_BRUSH_CONFLICT = QBrush(CONFLICT_CIRCLE_COLOR_CONFLICT)
 
+
 # Reprise du TD pyairport:
 class PanZoomView(QtWidgets.QGraphicsView):
     """An interactive view that supports Pan and Zoom functions"""
@@ -64,7 +65,7 @@ class RadarView(QtWidgets.QWidget):
         self.scene = QtWidgets.QGraphicsScene()
         self.scene.addRect(0, 0, 10, 10)
         self.view = PanZoomView(self.scene)
-        #self.time_entry = QtWidgets.QLineEdit()
+        # self.time_entry = QtWidgets.QLineEdit()
 
         # Inversion de l'axe des ordonnées
         self.view.scale(1, -1)
@@ -125,7 +126,7 @@ class RadarView(QtWidgets.QWidget):
                 path.lineTo(xy.x(), xy.y())
             item = QtWidgets.QGraphicsPathItem(path, trajectory_group)
             item.setPen(pen)
-            #item.setToolTip('Trajectoire ' + 'trajectory.name')
+            # item.setToolTip('Trajectoire ' + 'trajectory.name')
             item2 = AircraftItem(f)
             flight_group.addToGroup(item2)
 
@@ -135,6 +136,7 @@ class RadarView(QtWidgets.QWidget):
         for item in liste_item:
             if str(type(item)) == "<class 'radarview.AircraftItem'>":  # Pas beau ça
                 item.changePos(t)
+
 
 # Groupe de deux cercles permettant de visualiser l'avion (petit cercle bleu)
 # ainsi que son cercle de conflit (grand cercle vert ou rouge si conflit(s))
@@ -167,11 +169,11 @@ class AircraftItem(QGraphicsItemGroup):
         self.addToGroup(self.item_conflit)
         self.setPos(self.trajectoire[0] + QPoint(0, 0))
 
-# Cette fonction sert à définir la position de l'avion à l'instant t
-# Elle change également la couleur du cercle de conflits d'un avion au
-# cas où il est encore impliqué dans au moins un conflit.
-# Cela nous permet de vérifier visuellement s'il persiste des conflits,
-# et dans ce cas, quels avions sont impliqués.
+    # Cette fonction sert à définir la position de l'avion à l'instant t
+    # Elle change également la couleur du cercle de conflits d'un avion au
+    # cas où il est encore impliqué dans au moins un conflit.
+    # Cela nous permet de vérifier visuellement s'il persiste des conflits,
+    # et dans ce cas, quels avions sont impliqués.
     def changePos(self, t):
         point = self.trajectoire[t]
         self.setPos(point)

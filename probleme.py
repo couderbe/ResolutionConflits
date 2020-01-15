@@ -3,6 +3,7 @@ import numpy as np
 from PyQt5.QtCore import QPoint
 import constantes as ct
 
+
 class Flight():
 
     # Cette classe crée un objet flight avec les attributs suivants:
@@ -74,7 +75,7 @@ class Flight():
 
     def __repr__(self):
         return 'Vitesse: {0} Depart: {1} Manoeuvre: {2} Angle0: {3}'.format(self.speed, self.pointDepart,
-                                                                              self.manoeuvre, self.angle0 * 180 / np.pi)
+                                                                            self.manoeuvre, self.angle0 * 180 / np.pi)
 
 
 class Manoeuvre():
@@ -136,7 +137,7 @@ def creaPop(Flights):
             manArray = np.array([pop_t0[k][l], pop_theta[k][l], pop_alpha[k][l]])
             eltMan.append(manArray)
         liste_manoeuvres.append(eltMan)
-    return liste_manoeuvres,FLIGHTS
+    return liste_manoeuvres, FLIGHTS
 
 
 # Fonction de calcul du coût des manoeuvres de tous les avions
@@ -179,7 +180,7 @@ def updateConflits(FLIGHTS):
 # Elle va dans un premier temps éliminer les conflits, puis privilégiera les solutions qui réduisent la durée de manoeuvre.
 # Tant qu'elle reste inférieure à 1/2: il y a encore des conflits.
 # Elle prend en paramètre "Man" une liste de manoeuvres (une pour chaque avion)
-def fitness(Man,FLIGHTS):
+def fitness(Man, FLIGHTS):
     for i, vol in enumerate(FLIGHTS):
         vol.manoeuvre = convertAtoM(Man[i])
     liste_Conflits = updateConflits(FLIGHTS)

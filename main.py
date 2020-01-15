@@ -8,8 +8,7 @@ import IO
 import creationSituation as cS
 import matplotlib.pyplot as plt
 import constantes as ct
-import numpy as np
-
+import os
 
 ### ---------- MAIN ---------- ###
 
@@ -18,20 +17,21 @@ if __name__ == "__main__":
     if ct.FILE == None:
         t = time.time()
         if ct.SPEED_TYPE == 0:
-            liste_vitesse_avion = cS.vitesseConstante(int(ct.VITESSE))  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
+            liste_vitesse_avion = cS.vitesseConstante(int(
+                ct.VITESSE))  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
         else:
             print(ct.VITESSE[1:-2].split(','))
             liste_vitesse_avion = cS.vitesseAleatoire(ct.VITESSE[1:-2].split(','))
         type = ct.TYPE_FCT
         if type == 0:
-            Flights = cS.cercle(ct.m,ct.RAYON_CERCLE,liste_vitesse_avion)
+            Flights = cS.cercle(ct.m, ct.RAYON_CERCLE, liste_vitesse_avion)
         elif type == 1:
-            Flights = cS.cercle_deforme(ct.m, ct.RAYON_CERCLE, liste_vitesse_avion,ct.EPSILON)
+            Flights = cS.cercle_deforme(ct.m, ct.RAYON_CERCLE, liste_vitesse_avion, ct.EPSILON)
         elif type == 2:
             Flights = cS.hasard(liste_vitesse_avion)
-        population,FLIGHTS = pb.creaPop(Flights)
-        solution,list_gen_avg,list_gen_best = de.algoDE(pb.fitness, ct.BOUNDS, ct.N_pop, ct.F, ct.CR, ct.ITERATIONS, population, FLIGHTS)
-
+        population, FLIGHTS = pb.creaPop(Flights)
+        solution, list_gen_avg, list_gen_best = de.algoDE(pb.fitness, ct.BOUNDS, ct.N_pop, ct.F, ct.CR, ct.ITERATIONS,
+                                                          population, FLIGHTS)
 
         x = [k for k in range(ct.ITERATIONS)]
         yAvg = list_gen_avg
@@ -46,32 +46,33 @@ if __name__ == "__main__":
         plt.ylabel("Fitness")
         tExec = (time.time() - t) / 60
         print("Temps d'exécution: " + str(tExec))
-        print("La meilleure solution est " + str(solution))
-        print(pb.fitness(solution,FLIGHTS))
+        print("La meilleure solution est: " + str(solution))
+        print("Fitness: " + str(pb.fitness(solution, FLIGHTS)))
         # Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
 
         for i, vol in enumerate(Flights):
             vol.manoeuvre = pb.convertAtoM(solution[i])
-            print(vol.manoeuvre)
-        print(Flights)
+
         date = time.ctime(time.time())
         dateTest = "_".join(date.split()).replace(':', '_')
+        os.makedirs(ct.REPERTOIRE, exist_ok=True)
+        os.makedirs(ct.REPERTOIRE + ct.REPERTOIRE_FITNESS, exist_ok=True)
         filename = ct.REPERTOIRE + dateTest + '.txt'
         fileFitnessname = ct.REPERTOIRE + ct.REPERTOIRE_FITNESS + dateTest + '.png'
+
         try:
-            print(filename)
-            print(fileFitnessname)
             IO.write(Flights, filename, tExec)
             plt.savefig(fileFitnessname)
         except Exception:
-            print("Probleme d'enregistrement du fichier")
+            print("Problème d'enregistrement du fichier")
         trajectories = [vol.pointTrajectory() for vol in Flights]
-        plt.show(block = False)
+        plt.show(block=False)
     else:
         Flights = IO.read(ct.FILE)
         Man = [vol.manoeuvre.convertMtoA() for vol in Flights]
-        print(pb.fitness(Man,Flights))
+        print(pb.fitness(Man, Flights))
         pb.updateConflits(Flights)
+
     # Initialisation Qt
     app = QtWidgets.QApplication([])
 
@@ -83,8 +84,6 @@ if __name__ == "__main__":
     win = QtWidgets.QMainWindow()
     win.setWindowTitle("Résolution de conflits")
     win.setCentralWidget(rad)
-    # win.resize(1000, 600)
-    # win.show()
     win.showMaximized()
 
     # enter the main loop

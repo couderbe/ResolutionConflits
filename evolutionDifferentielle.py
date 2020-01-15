@@ -41,7 +41,7 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, 
     population = popInit
 
     ### Calcul du "score": fitness des individus de la population
-    popScore = [cost_func(population[i],FLIGHTS) for i in range(popsize)]
+    popScore = [cost_func(population[i], FLIGHTS) for i in range(popsize)]
 
     list_gen_avg = []
     list_gen_best = []
@@ -52,7 +52,7 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, 
 
         gen_scores = []  # score keeping
 
-    ### Mutations et Cross-Overs de la population:
+        ### Mutations et Cross-Overs de la population:
         # Boucle sur les individus de la population:
         for j in range(0, popsize):
 
@@ -69,10 +69,9 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, 
 
             # Etapes de "Mutation" et "Cross_over" de j:
             # x_mute est le candidat éventuel au remplacement de l'individu j
-            x = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)] # Cross_over
-            x_mute = [x_1_i + mutate * x_i for x_1_i, x_i in zip(x_1, x)] # Mutation
-            x_mute = keepLimits(x_mute, bounds) # Limitation
-
+            x = [x_2_i - x_3_i for x_2_i, x_3_i in zip(x_2, x_3)]  # Cross_over
+            x_mute = [x_1_i + mutate * x_i for x_1_i, x_i in zip(x_1, x)]  # Mutation
+            x_mute = keepLimits(x_mute, bounds)  # Limitation
 
             # Etape de "Recombinaison":
             # On remplace chaque composante de l'individu j avec une probabilité égale à "recombination".
@@ -86,7 +85,7 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, 
                     x_replace.append(x_t[k])
 
             # Sélection de l'individu qui maximise la fonction de coût:
-            score_mute = cost_func(x_replace,FLIGHTS)
+            score_mute = cost_func(x_replace, FLIGHTS)
 
             if score_mute > popScore[j]:
                 population[j] = x_replace
@@ -96,11 +95,11 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, 
             else:
                 gen_scores.append(popScore[j])
 
-
         # Conservation des différentes valeurs de la fonction de coût de la génération courante:
         gen_avg = sum(gen_scores) / popsize  # Moyenne des scores de la génération courante
         gen_best = max(gen_scores)  # Score du meilleur individu
-        gen_sol = population[gen_scores.index(max(gen_scores))]  # Solution au problème: individu qui maximise la fonction de coût
+        gen_sol = population[
+            gen_scores.index(max(gen_scores))]  # Solution au problème: individu qui maximise la fonction de coût
 
         list_gen_avg.append(gen_avg)
         list_gen_best.append(gen_best)
@@ -109,4 +108,4 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, 
         print('> GENERATION BEST:', gen_best, '\n')
         # print('> BEST SOLUTION:', gen_sol, '\n')
 
-    return gen_sol,list_gen_avg,list_gen_best
+    return gen_sol, list_gen_avg, list_gen_best
