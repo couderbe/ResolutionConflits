@@ -9,7 +9,7 @@ def read(filename):
     with open(filename, 'r') as file:
         for line in file:
             line2 = [float(elt) for elt in line.split(';')]
-            if len(line2 == 3):
+            if len(line2) == 3:
                 ct.T = line2[0]
                 ct.ITERATIONS = line2[1]
             else:

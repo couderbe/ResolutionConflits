@@ -5,12 +5,9 @@ import probleme as pb
 import evolutionDifferentielle as de
 import time
 import IO
-import sys
 import creationSituation as cS
 import matplotlib.pyplot as plt
 import constantes as ct
-import argparse
-
 
 
 ### ---------- MAIN ---------- ###
@@ -31,8 +28,8 @@ if __name__ == "__main__":
             Flights = cS.cercle_deforme(ct.m, ct.RAYON_CERCLE, liste_vitesse_avion,ct.EPSILON)
         elif type == 2:
             Flights = cS.hasard(liste_vitesse_avion)
-        population = pb.creaPop(Flights)
-        solution,list_gen_avg,list_gen_best = de.algoDE(pb.fitness, ct.BOUNDS, ct.N_pop, ct.F, ct.CR, ct.ITERATIONS, population)
+        population,FLIGHTS = pb.creaPop(Flights)
+        solution,list_gen_avg,list_gen_best = de.algoDE(pb.fitness, ct.BOUNDS, ct.N_pop, ct.F, ct.CR, ct.ITERATIONS, population, FLIGHTS)
 
 
         x = [k for k in range(ct.ITERATIONS)]
@@ -49,7 +46,7 @@ if __name__ == "__main__":
         tExec = (time.time() - t) / 60
         print("Temps d'exécution: " + str(tExec))
         print("La meilleure solution est " + str(solution))
-        print(pb.fitness(solution))
+        print(pb.fitness(solution,FLIGHTS))
         # Reconstruire une manoeuvre à partir d'un array (t0,theta, alpha):
 
         for i, vol in enumerate(Flights):
@@ -58,8 +55,8 @@ if __name__ == "__main__":
         print(Flights)
         date = time.ctime(time.time())
         dateTest = "_".join(date.split()).replace(':', '_')
-        filename = ct.FICHIER + dateTest + '.txt'
-        fileFitnessname = ct.FICHIER + ct.REPERTOIRE_FITNESS + dateTest + '.png'
+        filename = ct.REPERTOIRE + dateTest + '.txt'
+        fileFitnessname = ct.REPERTOIRE + ct.REPERTOIRE_FITNESS + dateTest + '.png'
         try:
             print(filename)
             print(fileFitnessname)
@@ -71,6 +68,7 @@ if __name__ == "__main__":
         plt.show(block = False)
     else:
         Flights = IO.read(ct.FILE)
+        pb.fitness(Flights)
     # Initialisation Qt
     app = QtWidgets.QApplication([])
 
@@ -88,5 +86,3 @@ if __name__ == "__main__":
 
     # enter the main loop
     app.exec_()
-
-

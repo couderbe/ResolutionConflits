@@ -36,12 +36,12 @@ def keepLimits(vec, bounds):
     return vec_new
 
 
-def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
+def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit, FLIGHTS):
     ### Initialisation de la population
     population = popInit
 
     ### Calcul du "score": fitness des individus de la population
-    popScore = [cost_func(population[i]) for i in range(popsize)]
+    popScore = [cost_func(population[i],FLIGHTS) for i in range(popsize)]
 
     list_gen_avg = []
     list_gen_best = []
@@ -86,7 +86,7 @@ def algoDE(cost_func, bounds, popsize, mutate, recombination, maxiter, popInit):
                     x_replace.append(x_t[k])
 
             # Sélection de l'individu qui maximise la fonction de coût:
-            score_mute = cost_func(x_replace)
+            score_mute = cost_func(x_replace,FLIGHTS)
 
             if score_mute > popScore[j]:
                 population[j] = x_replace

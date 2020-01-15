@@ -3,8 +3,7 @@ import argparse
 
 ### ---------- CONSTANTES ---------- ###
 
-    # dictParam = {'na':N_avion,'rc':f_RAYON_CERCLE,'file':f_FICHIER,'rf':f_REPERTOIRE_FITNESS,'t':f_T,
-    # 'd':f_d,'eps':f_EPSILON,'v':f_VITESSE,'i':f_ITERATIONS,'np':f_N_pop,'cr':f_CR,'f':f_F,'tf':f_TYPE_FCT}
+# Création des commandes pour modifier les paramètres du problème dans un terminal
 parser = argparse.ArgumentParser()
 parser.add_argument("-na",type=int,default=10)
 parser.add_argument("-rc",type=int,default=185200)
@@ -22,6 +21,7 @@ parser.add_argument("-tf",type=int, default=0,help= "Configuration de départ de
 parser.add_argument("-file",default=None)
 parser.add_argument("-st",type=int,default=0,help="Configuration des vitesses: 0:constantes 1:pseudo-aléatoire")
 args = parser.parse_args()
+
 """Constantes globales"""
 FILE = args.file
 SPEED_TYPE = args.st
@@ -29,7 +29,7 @@ TYPE_FCT = args.tf
 N_avion = args.na  ### Nombre d'avions
 m = 2 * 3.14159 / N_avion
 RAYON_CERCLE = args.rc # Rayon du cercle en mètres, correpondant à 100 NM
-FICHIER = args.rep
+REPERTOIRE = args.rep
 REPERTOIRE_FITNESS = args.rf
 T = args.t ### Temps total en secondes, correspondant à 30 minutes.
 d = args.d  ### Distance de séparation (en mètres), correspondant à la norme de 5NM
@@ -51,4 +51,3 @@ BOUNDS = [(0, T), (0, 1), (-alphaMax, alphaMax)]  ### Bornes de alpha, t0 et the
 alMc = alphaMax ** 2
 Tc = T ** 2
 
-#dictParam = {'na':N_avion,'rc':f_RAYON_CERCLE,'file':f_FICHIER,'rf':f_REPERTOIRE_FITNESS,'t':f_T,'d':f_d,'eps':f_EPSILON,'v':f_VITESSE,'i':f_ITERATIONS,'np':f_N_pop,'cr':f_CR,'f':f_F,'tf':f_TYPE_FCT}

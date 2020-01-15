@@ -2,12 +2,6 @@ import evolutionDifferentielle
 import numpy as np
 from PyQt5.QtCore import QPoint
 import constantes as ct
-""" Paramètres Globaux """
-FLIGHTS = []
-
-
-
-
 
 class Flight():
 
@@ -123,7 +117,6 @@ def convertAtoM(manoeuvre):
 # Cette fonction permet de créer la population de listes de vecteurs à 3 dimensions (représentant chacun une manoeuvre)
 # pour l'algorithme DE à partir de la fonction InitPop
 def creaPop(Flights):
-    global FLIGHTS
     FLIGHTS = Flights
     N_avion = ct.N_avion
     BOUNDS = ct.BOUNDS
@@ -143,12 +136,12 @@ def creaPop(Flights):
             manArray = np.array([pop_t0[k][l], pop_theta[k][l], pop_alpha[k][l]])
             eltMan.append(manArray)
         liste_manoeuvres.append(eltMan)
-    return liste_manoeuvres
+    return liste_manoeuvres,FLIGHTS
 
 
 # Fonction de calcul du coût des manoeuvres de tous les avions
 # Prend en paramètre Man une liste de manoeuvres (une pour chaque avion)
-def cout():
+def cout(FLIGHTS):
     C_ang = 0
     C_time = 0
     for vol in FLIGHTS:
@@ -169,7 +162,7 @@ def dureeConflit(liste_Conflits):
 
 
 # Fonction permettant  d'obtenir la liste de tous les conflits pour tous les avions
-def updateConflits():
+def updateConflits(FLIGHTS):
     N_avion = ct.N_avion
     liste_Conflits = []
     for i in range(N_avion):
@@ -186,15 +179,15 @@ def updateConflits():
 # Elle va dans un premier temps éliminer les conflits, puis privilégiera les solutions qui réduisent la durée de manoeuvre.
 # Tant qu'elle reste inférieure à 1/2: il y a encore des conflits.
 # Elle prend en paramètre "Man" une liste de manoeuvres (une pour chaque avion)
-def fitness(Man):
+def fitness(Man,FLIGHTS):
     for i, vol in enumerate(FLIGHTS):
         vol.manoeuvre = convertAtoM(Man[i])
-    liste_Conflits = updateConflits()
+    liste_Conflits = updateConflits(FLIGHTS)
     dureeConf = dureeConflit(liste_Conflits)
     if dureeConf > 10 ** (-10):
         return 1.0 / (2.0 + dureeConf)
     else:
-        return 0.5 + 1.0 / (2 + cout())
+        return 0.5 + 1.0 / (2 + cout(FLIGHTS))
 
 
 # Fonction prenant un angle en paramètre et renvoyant la matrice de rotation directe de cet angle.
