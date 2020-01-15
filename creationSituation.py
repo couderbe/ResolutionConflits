@@ -24,7 +24,27 @@ def vitesseConstante (vitesse) :
 def vitesseAleatoire(vitesse) :
     return [random.uniform(float(vitesse[0]),float(vitesse[1])) for k in range(ct.N_avion)]
 
+def sansConflits(pos, BORNE_MIN, AMPLITUDE) :
+    position = [pos]
+    i = 1
+    while i < ct.N_avion:
+        val_x = BORNE_MIN + AMPLITUDE * random.random()
+        val_y = BORNE_MIN + AMPLITUDE * random.random()
+        val = np.array([val_x, val_y])
+        pas_erreur = True
+        for pos in position :
+            distance = np.linalg.norm(pos - val)
+            if distance <= ct.d:
+                pas_erreur = False
+        if pas_erreur:
+            position.append(val)
+            i += 1
+    return position
+
+
+
 def cercle(m, RAYON_CERCLE, liste_vitesse_avion):
+
     return [pb.Flight(liste_vitesse_avion[k], QPoint(RAYON_CERCLE * np.cos(m * k),  RAYON_CERCLE * np.sin(m * k)),
                       np.pi + phase(complex( RAYON_CERCLE * np.cos(m * k), RAYON_CERCLE * np.sin(m * k))),
                       pb.Manoeuvre(ct.T, 0, 0)) for k in range(ct.N_avion)]
@@ -32,6 +52,8 @@ def cercle(m, RAYON_CERCLE, liste_vitesse_avion):
 
 def cercle_deforme(m, RAYON_CERCLE, liste_vitesse_avion, epsilon):
     deformation = [random.uniform(- epsilon, epsilon) for i in range(ct.N_avion)]
+    liste_position = sansConflits()
+
     return [pb.Flight(liste_vitesse_avion[k], QPoint(RAYON_CERCLE * np.cos(m * k + deformation[k]),
                                   RAYON_CERCLE * np.sin(m * k + deformation[k])), np.pi + phase(
         complex(RAYON_CERCLE * np.cos(m * k + deformation[k]),
@@ -48,7 +70,6 @@ def hasard(liste_vitesse_avion):
     while i < ct.N_avion:
         val_x = BORNE_MIN + AMPLITUDE*random.random()
         val_y = BORNE_MIN + AMPLITUDE*random.random()
-        angle = random.uniform(-np.pi/6,np.pi/6)
         val = np.array ([val_x, val_y])
 
         # Cette condition sert à éliminer les situations où les avions sont en conflit dès le départ,
