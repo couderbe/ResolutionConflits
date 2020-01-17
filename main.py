@@ -71,7 +71,6 @@ if __name__ == "__main__":
         Flights = IO.read(ct.FILE)
         Man = [vol.manoeuvre.convertMtoA() for vol in Flights]
         print(pb.fitness(Man, Flights))
-        pb.updateConflits(Flights)
 
     # Initialisation Qt
     app = QtWidgets.QApplication([])

@@ -10,9 +10,11 @@ def read(filename):
     with open(filename, 'r') as file:
         for line in file:
             line2 = [float(elt) for elt in line.split(';')]
-            if len(line2) == 3:
-                ct.T = line2[0]
-                ct.ITERATIONS = line2[1]
+            print(line2)
+            if len(line2) == 4:
+                ct.T = int(line2[0])
+                ct.ITERATIONS = int(line2[1])
+                ct.N_avion = int(line2[2])
             else:
                 avion = pb.Flight(np.linalg.norm(np.array([line2[3], line2[4]])), QPoint(line2[0], line2[1]), line2[2],
                                   pb.Manoeuvre(line2[5], line2[6], line2[7]))
@@ -24,7 +26,7 @@ def read(filename):
 ### consulter ultérieurement.
 def write(Flights, filename, tExec):
     with open(filename, 'w') as file:
-        file.write('{0};{1};{2}\n'.format(ct.T, ct.ITERATIONS, tExec))
+        file.write('{0};{1};{2};{3}\n'.format(ct.T, ct.ITERATIONS, ct.N_avion,tExec))
         for f in Flights:
             file.write(
                 '{0};{1};{2};{3[0]};{3[1]};{4.t0};{4.t1};{4.angle}\n'.format(f.pointDepart.x(), f.pointDepart.y(),
