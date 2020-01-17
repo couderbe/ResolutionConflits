@@ -20,7 +20,7 @@ if __name__ == "__main__":
             liste_vitesse_avion = cS.vitesseConstante(int(
                 ct.VITESSE))  # avoir la vitesse des avions (différentes si on choisit la situation aléatoire (mettre une liste de borne min et borne max))
         else:
-            print(ct.VITESSE[1:-2].split(','))
+            print(ct.VITESSE[1:-1].split(','))
             liste_vitesse_avion = cS.vitesseAleatoire(ct.VITESSE[1:-2].split(','))
         type = ct.TYPE_FCT
         if type == 0:
